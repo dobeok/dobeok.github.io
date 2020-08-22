@@ -71,3 +71,8 @@ fig.savefig('retention-heatmap.png', transparent=True)
 
 <img src="/assets/retention-heatmap.png" alt="heatmap" width="900"/>
 
+TODO: How to read heatmap rows/columns
+
+TODO: Plot retention curve
+
+TODO: Add inspirations

@@ -8,6 +8,8 @@ date:   2020-08-22 12:11:27 +0700
 import matplotlib.pyplot as plt
 
 import random
+
+# for reproducibility
 random.seed(42)
 ```
 
@@ -57,3 +59,4 @@ print(4 * num_points_inside / num_points)
 # n = 500_000 -> pi ~ 3.142856
 ```
 
+TODO: Add points plot
