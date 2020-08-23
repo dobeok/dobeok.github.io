@@ -70,5 +70,3 @@ print(4 * num_points_inside / num_points)
 # n = 100_000 -> pi ~ 3.13988
 # n = 500_000 -> pi ~ 3.142856
 ```
-
-TODO: Add points plot
