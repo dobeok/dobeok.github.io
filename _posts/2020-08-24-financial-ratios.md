@@ -2,7 +2,7 @@
 layout: post
 title:  "Financial Ratios Analysis"
 date:   2020-08-23 15:30:00 +0700
-
+tags: finance
 ---
 
 ## Getting the data

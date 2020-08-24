@@ -2,6 +2,7 @@
 layout: post
 title:  "Estimate pi using Monte-Carlo simulation"
 date:   2020-08-21 12:11:27 +0700
+tags: python simulations
 ---
 
 ### Idea

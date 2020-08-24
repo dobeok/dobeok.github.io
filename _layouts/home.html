@@ -13,6 +13,10 @@ layout: default
     <h2 class="post-list-heading">{{ page.list_title | default: "Posts" }}</h2>
     <ul class="post-list">
       {%- for post in site.posts -%}
+      
+      
+      
+      
       <li>
         {%- assign date_format = site.minima.date_format | default: "%b %-d, %Y" -%}
         <span class="post-meta">{{ post.date | date: date_format }}</span>
@@ -24,10 +28,18 @@ layout: default
         {%- if site.show_excerpts -%}
           {{ post.excerpt }}
         {%- endif -%}
+        
+        {% if post.tags.size > 0 %}
+      Tag{% if post.tags.size > 1 %}s{% endif %}:
+      {{ post.tags | sort | join: ", " }}
+    {% endif %}
+        
+        
       </li>
       {%- endfor -%}
     </ul>
 
+  
     
   {%- endif -%}
 

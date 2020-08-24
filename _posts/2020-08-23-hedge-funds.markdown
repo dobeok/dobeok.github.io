@@ -2,6 +2,7 @@
 layout: post
 title:  "Hedge Fund Strategies"
 date:   2020-08-23 15:30:00 +0700
+tags: finance
 ---
 
 Hedge fund strategies can be classified as **directional** or **non-directional**

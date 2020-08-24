@@ -2,6 +2,7 @@
 layout: post
 title:  "Web scraping with requests and BeautifulSoup"
 date:   2020-08-20 12:11:27 +0700
+tags: web-scraping requests
 ---
 
 Web scraping is something I regularly do at work. This post provides a bare bone example of the workflow. The libraries used are `requests` and `BeautifulSoup`

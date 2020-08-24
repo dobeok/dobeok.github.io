@@ -2,6 +2,7 @@
 layout: post
 title:  "Simulating the secretary problem"
 date:   2020-08-23 15:30:00 +0700
+tags: python simulations
 ---
 
 The secretary problem is one that demonstrates a scenario involving optimal stopping theory.
