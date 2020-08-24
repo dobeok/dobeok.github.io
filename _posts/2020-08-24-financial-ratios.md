@@ -5,15 +5,18 @@ date:   2020-08-23 15:30:00 +0700
 tags: finance
 ---
 
-## Getting the data
+
 
 Financial ratios provide relative measures to interpret firms' performance (strength and weakness).
 Here are the main categories of the ratios:
+
 - **Profitability ratios:** Focus on the firm’s earnings
 - **Leverage ratios:** Measure the indebtedness/solvency of the firm.
 - **Liquidity ratios:** Measure how easily the firm can lay its hands on
 cash. Some assets such as marketable securities and accounts receivable, are more liquid than others and can be more quickly and easily converted into cash.
 - **Efficiency Ratios:** How efficiently does the firm use its assets to generate sales.
+
+## Getting the data
 
 Here's the steps to getting these numbers. In this post, I use [Financial Modelling Prep](https://financialmodelingprep.com/)'s free tier account and will use Apple (AAPL)'s data
 
@@ -23,14 +26,10 @@ Register an account from [financialmodelingprep](https://financialmodelingprep.c
 
 #### Step 2:
 
-Imports
-
 ```python
 import requests
 import pandas as pd
 ```
-
-#### Step 3:
 
 Make a requets. API_KEY is stored in `api_key` variable
 
@@ -43,7 +42,7 @@ ratios
 # <Response [200]>
 ```
 
-#### Step 4:
+#### Step 3:
 
 Pandas provides a convenient way to parse the requested data
 Note that data are stored in `ratios` columns as
