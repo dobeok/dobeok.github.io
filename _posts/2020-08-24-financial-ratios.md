@@ -52,7 +52,7 @@ df = pd.DataFrame(ratios.json())
 df.head()
 ```
 
-![fmp-1](/assets/fmp-1.png)
+![fmp-1](/assets/img/fmp-1.png)
 
 Finally we use `pd.json_normalize` method to explode the columns
 
@@ -61,7 +61,7 @@ df_exploded = pd.json_normalize(df['ratios'])
 df_exploded.head()
 ```
 
-![fmp-1](/assets/fmp-2.png)
+![fmp-1](/assets/img/fmp-2.png)
 
 We can check for the available data using `df.columns`
 

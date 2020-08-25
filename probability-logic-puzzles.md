@@ -10,7 +10,7 @@ permalink: /probability-questions/
 
 _Answer:_
 
-![image](/assets/biased-coin.png)
+![image](/assets/img/biased-coin.png)
 
 Instead of tossing the coin once, we toss it twice. The idea is to create different outcomes that have the same probabilities.
 
@@ -30,7 +30,7 @@ The probability of surviving if you spin the cylinder first is 3/6 = .50​
 
 If you don't spin, then the probability of getting an empty chamber is 2/3 = .66​
 
-![image](/assets/russian-roulette.png)
+![image](/assets/img/russian-roulette.png)
 
 If your friend did not get a bullet, then he must have fired chamber D or E of R.
 

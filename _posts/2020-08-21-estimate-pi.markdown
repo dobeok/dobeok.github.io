@@ -3,7 +3,7 @@ layout: post
 title:  "Estimate pi using Monte-Carlo simulation"
 date:   2020-08-21 12:11:27 +0700
 tags: python simulations
-featured_img: /assets/estimate-pi.png
+featured_img: /assets/img/estimate-pi.png
 ---
 
 ### Idea
@@ -14,7 +14,7 @@ We can estimate the probability above by counting the actual number of points. T
 
 ### The code
 
-![estimate-pi](/assets/estimate-pi.png)
+![estimate-pi](/assets/img/estimate-pi.png)
 
 ```python
 import matplotlib.pyplot as plt

@@ -3,7 +3,7 @@ layout: post
 title: 'Cohort and Retention analysis'
 date: 2020-08-22 21:00:00 +0700
 tags: business
-featured_img: /assets/retention-heatmap.png
+featured_img: /assets/img/retention-heatmap.png
 ---
 
 Cohort analysis provides insights into users behaviors by segmenting them into mutually exclusive groups and observe the differences. Though there are multiple ways to define a cohort, the most common is grouping users by acquisition date.
@@ -18,7 +18,7 @@ Input data is a generic sales log including 3 columns: unique customer id, order
 df.head()
 ```
 
-<img src="/assets/cohort-1.png" alt="cohort-1" width="300"/>
+<img src="/assets/img/cohort-1.png" alt="cohort-1" width="300"/>
 
 
 
@@ -30,7 +30,7 @@ df['cohort'] = df.groupby('customer_id')['order_week'].transform('min')
 df['weeks_since_first_order'] = df['order_week'] - df['cohort']
 ```
 
-<img src="/assets/cohort-2.png" alt="cohort-2" width="600"/>
+<img src="/assets/img/cohort-2.png" alt="cohort-2" width="600"/>
 
 
 
@@ -39,7 +39,7 @@ cohort_data = df.groupby(['cohort', 'weeks_since_first_order'])['customer_id'].a
 cohort_data.head()
 ```
 
-<img src="/assets/cohort-3.png" alt="cohort-3" width="300"/>
+<img src="/assets/img/cohort-3.png" alt="cohort-3" width="300"/>
 
  
 
@@ -50,13 +50,13 @@ cohort_count = cohort_data.pivot_table(index='cohort',
 cohort_count.head()
 ```
 
-<img src="/assets/cohort-4.png" alt="cohort-4" width="600"/>
+<img src="/assets/img/cohort-4.png" alt="cohort-4" width="600"/>
 
 ```python
 retention = cohort_count.divide(cohort_count.iloc[:,0], axis=0).round(3) * 100
 ```
 
-<img src="/assets/cohort-5.png" alt="cohort-5" width="600"/>
+<img src="/assets/img/cohort-5.png" alt="cohort-5" width="600"/>
 
 Plotting cohort using seaborn
 
@@ -73,7 +73,7 @@ sns.heatmap(data=retention,
 fig.savefig('retention-heatmap.png', transparent=True)
 ```
 
-<img src="/assets/retention-heatmap.png" alt="heatmap" width="900"/>
+<img src="/assets/img/retention-heatmap.png" alt="heatmap" width="900"/>
 
 ## Using cohort heatmap
 
