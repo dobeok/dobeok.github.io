@@ -3,6 +3,7 @@ layout: post
 title: 'Cohort and Retention analysis'
 date: 2020-08-22 21:00:00 +0700
 tags: business
+featured_img: /assets/retention-heatmap.png
 ---
 
 Cohort analysis provides insights into users behaviors by segmenting them into mutually exclusive groups and observe the differences. Though there are multiple ways to define a cohort, the most common is grouping users by acquisition date.
