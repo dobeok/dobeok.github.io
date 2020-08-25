@@ -13,6 +13,8 @@ We can estimate the probability above by counting the actual number of points. T
 
 ### The code
 
+![estimate-pi](/assets/estimate-pi.png)
+
 ```python
 import matplotlib.pyplot as plt
 
@@ -20,25 +22,7 @@ import random
 
 # for reproducibility
 random.seed(42)
-```
 
-
-
-```python
-fig, ax = plt.subplots()
-ax.set_aspect('equal')
-circle1 = plt.Circle((0, 0), 1, color='#f0f0f0')
-ax.add_artist(circle1)
-
-ax.set_xlim(0, 1)
-ax.set_ylim(0, 1)
-
-ax.set_title('$1/4$ Area of circle / Area of square = $(\pi * r^2) / 4r^2 = \pi$')
-```
-
-![estimate-pi](/assets/estimate-pi.png)
-
-```python
 # euclidean distance
 def distance_from_origin(point):
     return (point[0]**2 + point[1]**2) ** .5
