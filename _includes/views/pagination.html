@@ -1,0 +1,67 @@
+{%- if page.paginator -%}
+  {%- assign paginator = page.paginator -%}
+{%- elsif paginator == nil -%}
+  {%- assign paginator = site -%}
+{%- endif -%}
+
+{%- if paginator.posts.size > 0 -%}
+<div class="pagination">
+  <!-- Post list links -->
+  <ul class="post-list">
+    {%- for post in paginator.posts -%}
+    <li>
+      {%- assign date_format = site.yat.date_format | default: "%b %-d, %Y" -%}
+
+      {% assign article = post.content %}
+      {% assign lang = post.lang %}
+      {%- include functions.html func='get_reading_time' -%}
+      {% assign reading_time = return %}
+      {%- include functions.html func='get_article_excerpt' -%}
+      {% assign excerpt = return %}
+      {%- assign post_url = post.url | relative_url -%}
+
+      <h2 class="post-title">
+        <a class="post-link" href="{{ post_url }}">
+          {{ post.title | escape }}
+        </a>
+      </h2>
+      <div class="post-meta">
+        <span class="post-date"><i class="fa fa-calendar"></i> {{ post.date | date: date_format }}</span>
+        <span class="post-reading-time left-vsplit"><i class="fa fa-clock-o"></i> {{ reading_time }}</span>
+      </div>
+
+      {%- if post.featured_img -%}
+      <center>
+        <a href="{{ post.url | relative_url }}"><img src='{{ post.featured_img }}' max-height='22px'><br/></a>
+      </center>
+      <br/>
+       {%- endif -%}
+      <!-- <a class="post-excerpt" href="{{ post_url }}">
+        <p>
+        {{ excerpt }} <span class="read_more">Read More</span>
+        </p>
+      </a> -->
+      {{ excerpt }}
+      <a class="post-excerpt" href="{{ post_url }}">
+        
+        <span class="read_more">More</span>
+        
+      </a>
+      <!-- edit tag color here -->
+      <div class="post-tags"> <span style='color:#000'><i class="fa fa-tags"></i> <i>Tags: </i></span>
+        
+        {%- for tag in post.tags -%}
+        <!-- can add hashtag sign # here -->
+        <a class="post-tag" href="{{ '/tags.html ' | relative_url }}#{{tag}}">{{tag}}</a>
+        {%- endfor -%}
+      </div>
+    </li>
+    {%- endfor -%}
+  </ul>
+
+  <!-- Pagination links -->
+  {%- if paginator.posts.size < site.posts.size -%}
+    {%- include views/paginator.html -%}
+  {%- endif -%}
+</div>
+{%- endif -%}

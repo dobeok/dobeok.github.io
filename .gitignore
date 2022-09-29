@@ -1,0 +1,16 @@
+*.gem
+.bundle
+.sass-cache
+_site
+Gemfile.lock
+
+_posts/drafts/
+
+.DS_Store
+.jekyll-cache/
+
+.ipynb_checkpoints
+
+.env
+
+offline-notes/
