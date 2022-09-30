@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  Template matching with openCV
-date:   2022-08-01 12:00:00 +0700
+date:   2022-03-01 12:00:00 +0700
 tags: computer-vision openCV
 featured_img: /assets/images/posts/find-dota-heroes/example1.png
 ---
@@ -20,7 +20,7 @@ Tools used: [openpycv](https://opencv.org/) and [mss](https://python-mss.readthe
 
 
 ### Sample captured image
-
+[WIP]
 
 
 
