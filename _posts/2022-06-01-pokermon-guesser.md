@@ -11,6 +11,7 @@ featured_img: /assets/images/posts/pokemon-guesser/pokemon-banner.jpg
 
 "Who's that pokemon?" is a well known trivia game where people are shown silhouette of a pokemon and then try to guess its name. In this post, I will recreate the images. To do so, I  start off with a colored image of a pokemon, and then extract its sihoulette using contour detection. In addition to the base game, I will also add some flavors. For example: adding hints by showing a pixelated image, or revealing part of the original image.
 
+![demo](/assets/images/posts/pokemon-guesser/pokemon-banner.jpg)
 
 ### Getting the base images
 
@@ -64,7 +65,7 @@ import cv2
 import matplotlib.pyplot as plt
 
 
-file_name = 'resources/img_pokemon_jpg/charmander.jpg'
+file_name = 'resources/img_pokemon_jpg/amoonguss.jpg'
 
 # here I keep both the colored and grayscale images to better visualise the output
 # note that cv2 use BGR color space,
@@ -75,9 +76,6 @@ img_bgr = cv2.imread(img, cv2)
 img_gray = cv2.imread(file_name, cv2.IMREAD_GRAYSCALE)
 
 ```
-
-#### Side note about colorspace and printing on matplotlib
-
 
 
 #### Finding contours
@@ -131,18 +129,18 @@ axes[3].imshow(canvas)
 
 ```
 
-![img](/assets/images/posts/pokemon-guesser/contours-cha.png)
+![img](/assets/images/posts/pokemon-guesser/contours-amoonguss.png)
 
 
-### Merging contour with the background
+#### Merging contour with the background
 
-The remaining task is to add a background to the sihlouette. A simple solution is just to align the siloulette's centroid with a chosen point on the background. Since the background image can be recycled, I can hardcode the coordiate and here I chose the point at 600, 500
+The remaining task is to add a background to the sihlouette. A simple solution is just to align the siloulette's centroid with a chosen point on the background. Since the background image can be recycled, I can hardcode the coordiate and here I chose the point at 600, 550
 
 ![background](/assets/images/posts/pokemon-guesser/template.jpg)
 
 ```python3
 
-CENTER_COORDS = 450, 650
+CENTER_COORDS = 600, 550
 FILL_COLOR =  (142, 100, 46)
 
 def shift_center(contours, center_coords=CENTER_COORDS):
@@ -182,9 +180,18 @@ plt.imshow(base)
 # color the contour to create silhouette effects
 ```
 
-#### Final result
+### Final result
+
+Putting everything together, we achieve what looks just like the original game! Perhaps you might want to play around with positioning, or trying out different colors depending on your creativity.
+
+![amoonguss](/assets/images/posts/pokemon-guesser/final-amoonguss.png)
 
 
+####  More to come
+
+In addition to the basic silhouette effects, I've also tinkered with pixelating and re-coloring the images to add some variations. I will make a follow up post sharing the process.
+
+<img src="/assets/images/posts/pokemon-guesser/pixelate demo.jpg" style="max-width: 600px;" />
 
 
 
