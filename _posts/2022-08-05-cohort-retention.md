@@ -24,7 +24,7 @@ df.head()
 
 
 
-The most suitable time range depends on your product: the choice could be day/week/month. I'm using week because days tends to be too short and months could be too long.
+The most suitable time range depends on your product: the choice could be day/week/month. For an apps that you expect daily user (such as a language learning apps, daily frequency is suitable). For an e-commerce website, perhaps monthly purchases would yield the best indicator.
 
 ```python
 df['order_week'] = df['order_date'].dt.isocalendar().week

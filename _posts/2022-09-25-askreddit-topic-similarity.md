@@ -69,7 +69,7 @@ I fetched [1,000](https://github.com/dobeok/askreddit-topic-similarity/blob/b046
 
 
 - In this post I only compared data from a group of 1,000 posts, which is not a big number compared to the averaged more than 6,000 posts **per day**. This is a limit from PRAW. I can potentially look for alternative sources that archive reddit posts and do an offline analysis (for exammple: monthly data). With more data points, the matching process will most likely improve.
-- Some of the matches found are not strictly accurate (potentially due to lacking of similar questions), but intersting. As a user, I would be definitely okay with this algorithm because it's simple to implement and explainable.
+- Some of the matches found are not strictly accurate (potentially due to lacking of similar questions), but interesting. As a owner, I think this algo strike a good balance between producing good enough results and being simple to implement.
 
 ### The full code
 
