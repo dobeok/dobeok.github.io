@@ -3,7 +3,7 @@ layout: post
 title:  Estimate $\pi$ (pi) by simulation 
 date:   2020-08-21 12:11:27 +0700
 tags: shorts maths
-featured_img: /assets/images/posts/estimate-pi/estimate-pi-banner.jpg
+featured_img: /assets/images/posts/estimate-pi/est-pi-animation.gif
 ---
 
 ### Introduction
