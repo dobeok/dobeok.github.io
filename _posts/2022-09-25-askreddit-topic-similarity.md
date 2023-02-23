@@ -2,7 +2,7 @@
 layout: post
 title:  Finding the most similar questions on r/AskReddit
 date:   2022-09-25 12:00:00 +0700
-tags: tf-idf sklearn reddit
+tags: tf-idf sklearn
 featured_img: /assets/images/posts/askreddit-similar/askreddit.jpg
 ---
 

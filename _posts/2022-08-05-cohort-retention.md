@@ -2,7 +2,7 @@
 layout: post
 title: Cohort and Retention analysis
 date: 2022-08-05 21:00:00 +0700
-tags: retention visualization analytics
+tags: retention visualization analysis
 featured_img: /assets/images/posts/retention/retention-featured.svg
 ---
 
