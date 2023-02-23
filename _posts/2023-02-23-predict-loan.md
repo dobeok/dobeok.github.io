@@ -1,12 +1,11 @@
 ---
 layout: post
-title: Predict loan defaults
+title: Predicting loan defaults
 date:   2023-02-23 12:00:00 +0700
 tags: sklearn classification
-featured_img: 
+featured_img: /assets/images/posts/predict-loan-default/notebook_20_0.png
 
 ---
-
 ## Introduction
 
 * The goal of this task is to fit a statistical model to historical credit data and then use the model to estimate the value of current loans.
@@ -55,113 +54,13 @@ df.head()
 ```
 
 
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>account_no</th>
-      <th>gender</th>
-      <th>age</th>
-      <th>income</th>
-      <th>loan_amount</th>
-      <th>term</th>
-      <th>installment_amount</th>
-      <th>interest_rate</th>
-      <th>credit_score_at_application</th>
-      <th>outstanding_balance</th>
-      <th>status</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>acc_00000316</td>
-      <td>F</td>
-      <td>18</td>
-      <td>12143</td>
-      <td>47000</td>
-      <td>60</td>
-      <td>1045</td>
-      <td>0.12</td>
-      <td>860</td>
-      <td>0</td>
-      <td>PAID_UP</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>acc_00000422</td>
-      <td>F</td>
-      <td>18</td>
-      <td>6021</td>
-      <td>13000</td>
-      <td>60</td>
-      <td>330</td>
-      <td>0.18</td>
-      <td>640</td>
-      <td>0</td>
-      <td>PAID_UP</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>acc_00001373</td>
-      <td>F</td>
-      <td>39</td>
-      <td>12832</td>
-      <td>13000</td>
-      <td>60</td>
-      <td>296</td>
-      <td>0.13</td>
-      <td>820</td>
-      <td>0</td>
-      <td>PAID_UP</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>acc_00001686</td>
-      <td>F</td>
-      <td>33</td>
-      <td>4867</td>
-      <td>5000</td>
-      <td>36</td>
-      <td>191</td>
-      <td>0.22</td>
-      <td>540</td>
-      <td>0</td>
-      <td>PAID_UP</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>acc_00001733</td>
-      <td>F</td>
-      <td>23</td>
-      <td>5107</td>
-      <td>22000</td>
-      <td>36</td>
-      <td>818</td>
-      <td>0.20</td>
-      <td>580</td>
-      <td>11314</td>
-      <td>LIVE</td>
-    </tr>
-  </tbody>
-</table>
-</div>
+|**index**| **account_no** | **gender**   | **age** | **income** | **loan_amount** | **term** | **installment_amount** | **interest_rate** | **credit_score_at_application** | **outstanding_balance** | **status** |
+|----------------|--------------|---------|------------|-----------------|----------|------------------------|-------------------|---------------------------------|-------------------------|------------|
+| 0              | acc_00000316 | F       | 18         | 12143           | 47000    | 60                     | 1045              | 0.12                            | 860                     | 0          | PAID_UP |
+| 1              | acc_00000422 | F       | 18         | 6021            | 13000    | 60                     | 330               | 0.18                            | 640                     | 0          | PAID_UP |
+| 2              | acc_00001373 | F       | 39         | 12832           | 13000    | 60                     | 296               | 0.13                            | 820                     | 0          | PAID_UP |
+| 3              | acc_00001686 | F       | 33         | 4867            | 5000     | 36                     | 191               | 0.22                            | 540                     | 0          | PAID_UP |
+| 4              | acc_00001733 | F       | 23         | 5107            | 22000    | 36                     | 818               | 0.20                            | 580                     | 11314      | LIVE    |
 
 
 
@@ -204,115 +103,13 @@ df_full_train['status'] = df_full_train['status'].map({
 df_full_train.head()
 ```
 
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>account_no</th>
-      <th>gender</th>
-      <th>age</th>
-      <th>income</th>
-      <th>loan_amount</th>
-      <th>term</th>
-      <th>installment_amount</th>
-      <th>interest_rate</th>
-      <th>credit_score_at_application</th>
-      <th>outstanding_balance</th>
-      <th>status</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>acc_00000316</td>
-      <td>F</td>
-      <td>18</td>
-      <td>12143</td>
-      <td>47000</td>
-      <td>60</td>
-      <td>1045</td>
-      <td>0.12</td>
-      <td>860</td>
-      <td>0</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>acc_00000422</td>
-      <td>F</td>
-      <td>18</td>
-      <td>6021</td>
-      <td>13000</td>
-      <td>60</td>
-      <td>330</td>
-      <td>0.18</td>
-      <td>640</td>
-      <td>0</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>acc_00001373</td>
-      <td>F</td>
-      <td>39</td>
-      <td>12832</td>
-      <td>13000</td>
-      <td>60</td>
-      <td>296</td>
-      <td>0.13</td>
-      <td>820</td>
-      <td>0</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>acc_00001686</td>
-      <td>F</td>
-      <td>33</td>
-      <td>4867</td>
-      <td>5000</td>
-      <td>36</td>
-      <td>191</td>
-      <td>0.22</td>
-      <td>540</td>
-      <td>0</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>acc_00002114</td>
-      <td>M</td>
-      <td>38</td>
-      <td>9328</td>
-      <td>25000</td>
-      <td>36</td>
-      <td>904</td>
-      <td>0.18</td>
-      <td>630</td>
-      <td>0</td>
-      <td>0</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
+|**index**| **account_no** | **gender**   | **age** | **income** | **loan_amount** | **term** | **installment_amount** | **interest_rate** | **credit_score_at_application** | **outstanding_balance** | **status** |
+|----------------|--------------|---------|------------|-----------------|----------|------------------------|-------------------|---------------------------------|-------------------------|------------|
+| 0              | acc_00000316 | F       | 18         | 12143           | 47000    | 60                     | 1045              | 0.12                            | 860                     | 0          | 0 |
+| 1              | acc_00000422 | F       | 18         | 6021            | 13000    | 60                     | 330               | 0.18                            | 640                     | 0          | 0 |
+| 2              | acc_00001373 | F       | 39         | 12832           | 13000    | 60                     | 296               | 0.13                            | 820                     | 0          | 0 |
+| 3              | acc_00001686 | F       | 33         | 4867            | 5000     | 36                     | 191               | 0.22                            | 540                     | 0          | 0 |
+| 5              | acc_00002114 | M       | 38         | 9328            | 25000    | 36                     | 904               | 0.18                            | 630                     | 0          | 0 |
 
 
 
@@ -461,96 +258,14 @@ X_train = X_train.drop(['gender'], axis=1)
 X_train.head()
 ```
 
+|**index**| **age** | **income** | **loan_amount** | **term** | **installment_amount** | **interest_rate** | **credit_score_at_application** | **x0_M** |
+|---------|------------|-----------------|----------|------------------------|-------------------|---------------------------------|----------|
+| 0       | 33         | 16685           | 55000    | 60                     | 1223              | 0.12                            | 850      | 1.0 |
+| 1       | 27         | 15050           | 28000    | 24                     | 1331              | 0.13                            | 840      | 1.0 |
+| 2       | 50         | 40203           | 62000    | 48                     | 1345              | 0.02                            | 1000     | 1.0 |
+| 3       | 26         | 13754           | 39000    | 48                     | 1066              | 0.14                            | 810      | 1.0 |
+| 4       | 30         | 11830           | 31000    | 60                     | 705               | 0.13                            | 810      | 0.0 |
 
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>age</th>
-      <th>income</th>
-      <th>loan_amount</th>
-      <th>term</th>
-      <th>installment_amount</th>
-      <th>interest_rate</th>
-      <th>credit_score_at_application</th>
-      <th>x0_M</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>33</td>
-      <td>16685</td>
-      <td>55000</td>
-      <td>60</td>
-      <td>1223</td>
-      <td>0.12</td>
-      <td>850</td>
-      <td>1.0</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>27</td>
-      <td>15050</td>
-      <td>28000</td>
-      <td>24</td>
-      <td>1331</td>
-      <td>0.13</td>
-      <td>840</td>
-      <td>1.0</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>50</td>
-      <td>40203</td>
-      <td>62000</td>
-      <td>48</td>
-      <td>1345</td>
-      <td>0.02</td>
-      <td>1000</td>
-      <td>1.0</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>26</td>
-      <td>13754</td>
-      <td>39000</td>
-      <td>48</td>
-      <td>1066</td>
-      <td>0.14</td>
-      <td>810</td>
-      <td>1.0</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>30</td>
-      <td>11830</td>
-      <td>31000</td>
-      <td>60</td>
-      <td>705</td>
-      <td>0.13</td>
-      <td>810</td>
-      <td>0.0</td>
-    </tr>
-  </tbody>
-</table>
-</div>
 
 
 
@@ -678,97 +393,13 @@ X_test = X_test.drop(['gender'], axis=1)
 X_test.head()
 ```
 
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>age</th>
-      <th>income</th>
-      <th>loan_amount</th>
-      <th>term</th>
-      <th>installment_amount</th>
-      <th>interest_rate</th>
-      <th>credit_score_at_application</th>
-      <th>x0_M</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>37</td>
-      <td>14163</td>
-      <td>28000</td>
-      <td>60</td>
-      <td>652</td>
-      <td>0.14</td>
-      <td>780</td>
-      <td>1.0</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>27</td>
-      <td>10769</td>
-      <td>33000</td>
-      <td>24</td>
-      <td>1584</td>
-      <td>0.14</td>
-      <td>790</td>
-      <td>0.0</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>28</td>
-      <td>10747</td>
-      <td>34000</td>
-      <td>48</td>
-      <td>929</td>
-      <td>0.14</td>
-      <td>790</td>
-      <td>0.0</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>22</td>
-      <td>14439</td>
-      <td>49000</td>
-      <td>24</td>
-      <td>2284</td>
-      <td>0.11</td>
-      <td>910</td>
-      <td>0.0</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>32</td>
-      <td>6400</td>
-      <td>17000</td>
-      <td>36</td>
-      <td>649</td>
-      <td>0.22</td>
-      <td>540</td>
-      <td>1.0</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
+|**index**| **age** | **income** | **loan_amount** | **term** | **installment_amount** | **interest_rate** | **credit_score_at_application** | **x0_M** |
+|---------|------------|-----------------|----------|------------------------|-------------------|---------------------------------|----------|
+| 0       | 37         | 14163           | 28000    | 60                     | 652               | 0.14                            | 780      | 1.0 |
+| 1       | 27         | 10769           | 33000    | 24                     | 1584              | 0.14                            | 790      | 0.0 |
+| 2       | 28         | 10747           | 34000    | 48                     | 929               | 0.14                            | 790      | 0.0 |
+| 3       | 22         | 14439           | 49000    | 24                     | 2284              | 0.11                            | 910      | 0.0 |
+| 4       | 32         | 6400            | 17000    | 36                     | 649               | 0.22                            | 540      | 1.0 |
 
 
 
@@ -881,12 +512,6 @@ evaluate_model(y_test, preds)
 >>> 'precision': 0.8385093167701864,
 >>> 'f1_score': 0.8206686930091185}
 ```
-
-
-
-
-    
-
 
 
 Here we can verify that pipeline produces the same result as manual steps by comparing predicted output and metrics.
@@ -1017,112 +642,13 @@ df_live['default_prob'] = best_pipeline.predict_proba(df_live.drop(['outstanding
 df_live.head()
 ```
 
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>gender</th>
-      <th>age</th>
-      <th>income</th>
-      <th>loan_amount</th>
-      <th>term</th>
-      <th>installment_amount</th>
-      <th>interest_rate</th>
-      <th>credit_score_at_application</th>
-      <th>outstanding_balance</th>
-      <th>predicted_default</th>
-      <th>default_prob</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>F</td>
-      <td>23</td>
-      <td>5107</td>
-      <td>22000</td>
-      <td>36</td>
-      <td>818</td>
-      <td>0.20</td>
-      <td>580</td>
-      <td>11314</td>
-      <td>0</td>
-      <td>0.043</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>F</td>
-      <td>40</td>
-      <td>15659</td>
-      <td>33000</td>
-      <td>48</td>
-      <td>853</td>
-      <td>0.11</td>
-      <td>880</td>
-      <td>5637</td>
-      <td>0</td>
-      <td>0.000</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>M</td>
-      <td>25</td>
-      <td>15660</td>
-      <td>15000</td>
-      <td>48</td>
-      <td>395</td>
-      <td>0.12</td>
-      <td>860</td>
-      <td>6039</td>
-      <td>0</td>
-      <td>0.000</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>F</td>
-      <td>30</td>
-      <td>4208</td>
-      <td>15000</td>
-      <td>48</td>
-      <td>481</td>
-      <td>0.23</td>
-      <td>530</td>
-      <td>2817</td>
-      <td>0</td>
-      <td>0.297</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>F</td>
-      <td>18</td>
-      <td>6535</td>
-      <td>12000</td>
-      <td>48</td>
-      <td>346</td>
-      <td>0.17</td>
-      <td>660</td>
-      <td>3120</td>
-      <td>0</td>
-      <td>0.001</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
+|**index**| **gender** | **age** | **income** | **loan_amount** | **term** | **installment_amount** | **interest_rate** | **credit_score_at_application** | **outstanding_balance** | **predicted_default** | **default_prob** |
+|------------|---------|------------|-----------------|----------|------------------------|-------------------|---------------------------------|-------------------------|-----------------------|------------------|
+| 0          | F       | 23         | 5107            | 22000    | 36                     | 818               | 0.20                            | 580                     | 11314                 | 0                | 0.043 |
+| 1          | F       | 40         | 15659           | 33000    | 48                     | 853               | 0.11                            | 880                     | 5637                  | 0                | 0.000 |
+| 2          | M       | 25         | 15660           | 15000    | 48                     | 395               | 0.12                            | 860                     | 6039                  | 0                | 0.000 |
+| 3          | F       | 30         | 4208            | 15000    | 48                     | 481               | 0.23                            | 530                     | 2817                  | 0                | 0.297 |
+| 4          | F       | 18         | 6535            | 12000    | 48                     | 346               | 0.17                            | 660                     | 3120                  | 0                | 0.001 |
 
 
 
