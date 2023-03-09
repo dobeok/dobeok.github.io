@@ -3,10 +3,10 @@ layout: post
 title: Analyzing Singapore's HDB flats resale price
 date:   2023-03-08 12:00:00 +0700
 tags: analysis visualization
-featured_img: /assets/images/posts/01-predict-hdb-resale_files/color-map.png
+featured_img: /assets/images/posts/01-predict-hdb-resale_files/town_map.html
 
 ---
-
+<!-- /assets/images/posts/01-predict-hdb-resale_files/color-map.png -->
 
 In this series I will be modeling Singapore's HDB flats resale price. The first part is building a model with standard ML problem process (EDA, Feature Engineering, Split train/test data, Fit model, Evaluation). The second part (coming soon™) will be about mlops. I will use `mlflow` to track and manage experiments & models.
 

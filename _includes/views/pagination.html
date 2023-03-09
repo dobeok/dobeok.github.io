@@ -32,7 +32,23 @@
 
       {%- if post.featured_img -%}
       <center>
-        <a href="{{ post.url | relative_url }}"><img src='{{ post.featured_img }}' max-height='22px'><br/></a>
+        
+
+        {%- assign check = post.featured_img | split:'.' | last -%}
+        {% if check == "html" %}
+        <div style="width:100%;">
+          <div style="position:relative;width:100%;height:0;padding-bottom:60%;">
+              <span style="color:#565656">Make this Notebook Trusted to load map: File -> Trust Notebook</span>
+                  <iframe src="{{ post.featured_img }}" style="position:absolute;width:100%;height:100%;left:0;top:0;border:none !important;" allowfullscreen webkitallowfullscreen mozallowfullscreen>
+                  </iframe>
+          </div>
+        </div>
+            
+          {% else %}
+          <a href="{{ post.url | relative_url }}"><img src='{{ post.featured_img }}' max-height='22px'><br/></a>
+          {% endif %}
+
+
       </center>
       <br/>
        {%- endif -%}
