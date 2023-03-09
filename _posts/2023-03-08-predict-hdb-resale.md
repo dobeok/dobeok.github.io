@@ -257,7 +257,6 @@ df.head().T
 </div>
 
 
-
 Check of null/NaN data. In this case our % and count of rows having missing data are low so it's safe to drop them
 
 
@@ -584,13 +583,9 @@ for idx, col_name in enumerate(numerical_feature_cols):
 
 fig.tight_layout()
 ```
-
-
     
 ![png](/assets/images/posts/01-predict-hdb-resale_files/01-predict-hdb-resale_30_0.png)
     
-
-
 
 ```python
 # remove outliers
@@ -598,7 +593,6 @@ df = df[df['floor_area_sqm'] <= df['floor_area_sqm'].quantile(.95)]
 df = df.dropna()
 df = df.reset_index(drop=True)
 ```
-
 
 ```python
 # correlation between numeric variables and target
@@ -707,7 +701,6 @@ However, there are a lot more that we can do here:
 
 Without mlflow, we will have to manually keep track of model parameteres, data sources, metrics, etc (such as in a google sheet). This is prone to errors and hard to keep track.
 
-In the next post I will use mlflow to manage experiments and models.
 
 ## 5. Summary (so far)
 
