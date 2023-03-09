@@ -6,9 +6,7 @@ tags: analysis visualization
 featured_img: /assets/images/posts/01-predict-hdb-resale_files/town_map.html
 
 ---
-<!-- /assets/images/posts/01-predict-hdb-resale_files/color-map.png -->
-
-In this series I will be modeling Singapore's HDB flats resale price. The first part is building a model with standard ML problem process (EDA, Feature Engineering, Split train/test data, Fit model, Evaluation). The second part (coming soon™) will be about mlops. I will use `mlflow` to track and manage experiments & models.
+In this series I will be modeling Singapore's HDB flats resale price. The first part is about building a model, following a standard ML problem process (EDA, Feature Engineering, Split train/test data, Fit model, Evaluation). The second part (coming soon™) will be about mlops. I will use `mlflow` to track and manage experiments & models.
 
 Part 1 (This post)
 - Train different models to predict resale price for Singapore's HDB
@@ -18,8 +16,7 @@ Part 2 (Coming soon™)
 - Save models to model registry
 - Load and serve the best model
 
-<details>
-<summary>What are HDB flats?</summary>
+<details><summary>What are HDB flats?</summary>
     <ul>
     <li> HDB (Housing and Development Board) buildings are public housing blocks in Singapore. They were built and managed by the Housing and Development Board (HDB), a statutory board under the Ministry of National Development. 
     <li>
@@ -29,7 +26,8 @@ Part 2 (Coming soon™)
     <li>
     HDB flats are typically located in housing estates, which are self-contained communities with amenities such as schools, markets, and parks. The HDB also manages and maintains the estates, ensuring that they remain safe, clean and well-maintained.
     </li>
-    </ul>
+  </ul>
+
 </details>
 
 
@@ -257,7 +255,7 @@ df.head().T
 </div>
 
 
-Check of null/NaN data. In this case our % and count of rows having missing data are low so it's safe to drop them
+Checking for null/NaN data. In this case the percentage of rows having missing data are low, so it's safe to drop them
 
 
 ```python
@@ -292,24 +290,35 @@ df.isnull().mean()
 df = df.drop(df[df['latitude'].isnull()].index)
 ```
 
-Now let's look at the overall distribution of target variable. The distribution is right-skewed with few but very high values. The median value (SGD 440k) is lower than average (SGD 470k)
+Now let's look at the overall distribution of resale price, henceforth also refered to as the target variable.
+
+The distribution is right-skewed with few but very high values. The median value (SGD 440k) is lower than average (SGD 470k)
+
 
 
 ```python
-fig, ax = plt.subplots(figsize=(9, 4))
+fig, axes = plt.subplots(2, 1, figsize=(11, 5), sharex=True, height_ratios=[1, 6])
+
+
 df['resale_price'].hist(
     ec='white',
     linewidth=.5,
     bins=[_ * 50_000 for _ in range(30)],
     grid=False,
-    ax=ax)
+    ax=axes[1])
 
-ax.axvline(df['resale_price'].mean(), ls='--', c='red', label=f"avg = SGD {df['resale_price'].mean():,.0f}")
-ax.axvline(df['resale_price'].median(), ls='--', c='k', label=f"median = SGD {df['resale_price'].median():,.0f}")
+axes[1].axvline(df['resale_price'].mean(), ls='--', c='red', label=f"avg = SGD {df['resale_price'].mean():,.0f}")
+axes[1].axvline(df['resale_price'].median(), ls='--', c='k', label=f"median = SGD {df['resale_price'].median():,.0f}")
+axes[1].set_xticks([_ * 100_000 for _ in range(14)], labels=[_ * 100 for _ in range(14)])
+axes[1].set_xlabel('Unit: thousands SGD')
+axes[1].legend()
+axes[0].axis('off')
+sns.despine(ax=axes[1])
 
-ax.set_title(f'HDB Resale Price')
-ax.legend()
-sns.despine(ax=ax)
+sns.boxplot(df['resale_price'], orient="h", showfliers=False, ax=axes[0])
+sns.despine(ax=axes[0], left=True, bottom=True)
+fig.suptitle('HDB Resale Price Distribution')
+fig.tight_layout()
 ```
 
 
@@ -334,7 +343,6 @@ ax.axvline(x=0, c='k')
 ax.set_title('Correlation with resale price')
 sns.despine(ax=ax)
 ```
-
 
     
 ![png](/assets/images/posts/01-predict-hdb-resale_files/01-predict-hdb-resale_15_0.png)
@@ -415,18 +423,17 @@ df.select_dtypes('object').nunique()
 
 
 ```python
+fig, ax = plt.subplots(figsize=(9, 4))
+
 sns.boxplot(
     data=df,
     y='resale_price',
     x='flat_type',
     palette="Reds",
-    showfliers=False,)
+    showfliers=False,
+    ax=ax)
 ```
 
-
-
-
-    <AxesSubplot: xlabel='flat_type', ylabel='resale_price'>
 
 
 
@@ -439,6 +446,9 @@ sns.boxplot(
 ## 2. Feature engineering
 
 Intuitively, we know that location is one of the most important factor in determining house prices. We will need a way to add this information to our model. To visualize the impact of location, I've created a choropleth map.
+
+It's visible from the map that the further towns have lower price range. 
+
 
 <details>
 <summary>Show code</summary>
@@ -457,7 +467,7 @@ Intuitively, we know that location is one of the most important factor in determ
 
 
 
-To determine how central a location it, I will calculate the straight line distance to a center point. For Singapore, I've selected the point having coordinate value `CITY_CENTER = (1.2801990449115896, 103.85175675603243)`
+To determine how central a location it, I will calculate the straight line distance to a center point. For Singapore, I've selected the point having coordinate value `CITY_CENTER = (1.28019, 103.85175)`. This point was picked by eyeballing on google map.
 
 
 ```python
@@ -493,9 +503,9 @@ df['distance_from_center'] = df.apply(
 
 ### Distacne to nearest MRT station
 
-Other than distance to city center, close priximity to amenities and public transportations could also make the flats more attractive and hence having higher price. I've also added distance (in km) to the nearst MRT station.
+Other than distance to city center, close priximity to amenities and public transportations could also make the flats more attractive and hence having higher price. I will now calculate distance from the nearest MRT station to each of the HDB block.
 
-To make calculations faster, I've (1) estimated the nearest location using Pythagorean theorem, and then (2) use the haversine formula above to determine actual distance in kilometers.
+To make calculations faster, I've (1) estimated the nearest location using Pythagorean theorem, and then (2) use the haversine formula above to determine actual distance in kilometers. This will save some calculation time.
 
 
 ```python
@@ -615,7 +625,7 @@ sns.despine(ax=ax)
 
 
 ```python
-# save data
+# save cleaned data for reusing later
 df.to_csv('./data/final/cleaned-data.csv', index=False)
 ```
 
@@ -633,7 +643,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 
 #### 4.1 Linear Regresssion (baseline)
 
-I always want to have a simple base estimator to use for comparing performance
+I will first fit a simple estimator, which will be used as baseline.
 
 
 ```python
