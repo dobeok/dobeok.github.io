@@ -264,6 +264,7 @@ Check of null/NaN data. In this case our % and count of rows having missing data
 df.isnull().mean()
 ```
 
+
     month                  0.000000
     town                   0.000000
     flat_type              0.000000

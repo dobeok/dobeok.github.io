@@ -8,11 +8,6 @@ href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/base16/materia
 <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
 
 
-<!-- <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.8/styles/default.min.css"> -->
-<!-- <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.8/highlight.min.js"></script> -->
-<!-- <script>hljs.initHighlightingOnLoad();</script> -->
-
-
 
 
 <!-- and it's easy to individually load additional languages -->
@@ -86,8 +81,10 @@ document.addEventListener('DOMContentLoaded', function(event) {
   /* code language badge */
   pre.badge::before {
     content: attr(data-lang);
+    /* color: #f0f0f0; */
     color: {{badge_color}};
-    background-color: {{badge_background_color}};
+    /* background-color: {{badge_background_color}}; */
+    background-color: #000000 ;
     padding: 0 .5em;
     border-radius: 0 2px;
     text-transform: {{badge_text_transform}};
