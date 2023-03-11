@@ -315,6 +315,10 @@ html {
     @include relative-font-size(1.65);
     font-weight: $base-font-weight * 1.5;
     color: #333;
+
+    &:hover {
+      color: #ec5e2a;
+    }
   }
 
   .post-excerpt {
@@ -395,6 +399,7 @@ html {
 
     .post-title {
       margin-bottom: 6px;
+      
     }
 
     .post-subtitle {
