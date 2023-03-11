@@ -12,5 +12,6 @@ _posts/drafts/
 .ipynb_checkpoints
 
 .env
-
+.gitignore
 offline-notes/
+notes.txt

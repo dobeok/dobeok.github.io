@@ -326,15 +326,16 @@ html {
   .post-tags .post-tag {
     display: inline-block;
     text-decoration: none;
-    border: 1px solid;
+    border: 0px solid;
     padding: 0px 3px;
     border-radius: 5px;
     transition: color 0.2s;
     margin-bottom: 8px;
     // added my custom tag color
     // background-color: #ed6534;
-    background-color: #424242;
-    color: white;
+    // background-color: #424242;
+    background-color: #f0f0f0;
+    color: #ec5e2a;
 
     &:not(:last-child) {
       margin-right: 2px;

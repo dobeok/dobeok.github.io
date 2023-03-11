@@ -40,7 +40,7 @@
               {%- endif -%}
             {%- endfor -%}
 
-            {%- assign name = 'translate_langs' -%}
+            <!-- {%- assign name = 'translate_langs' -%}
             {%- include functions.html func='get_value' -%}
             {%- assign translate_langs = return -%}
             {%- if translate_langs.size > 0 -%}
@@ -49,7 +49,7 @@
               {%- assign lang = return -%}
               <span class="page-link">
                   {%- include extensions/google-translate.html -%}
-              </span>
+              </span> -->
             {%- endif -%}
           </div>
         </nav>

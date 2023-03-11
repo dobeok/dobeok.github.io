@@ -58,7 +58,7 @@ yat:
 # header_transparent: true
 
 # If you want to change the content width, you can set to another value
-content_width: "1020px"
+content_width: "980px"
 
 # Google analytics
 google_analytics: G-13G9T0DNE2
@@ -145,7 +145,7 @@ defaults:
 # These banner settings are for global banner default, but you can also
 # config it by the front matter for one specific post
 banner:
-  height: "160px"         # Banner default height
+  height: "180px"         # Banner default height
   heading_style: "color: black; font-family: Georgia"     # Custom heading style (e.g. "font-weight: bold; text-decoration: underline")
   subheading_style: "color: black; font-family: Georgia"  # Custom subheading style (e.g. color: gold)
 #   video: null             # Video banner source
