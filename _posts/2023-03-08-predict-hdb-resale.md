@@ -26,10 +26,9 @@ Part 2 (Coming soon™)
     <li>
     HDB flats are typically located in housing estates, which are self-contained communities with amenities such as schools, markets, and parks. The HDB also manages and maintains the estates, ensuring that they remain safe, clean and well-maintained.
     </li>
-  </ul>
+    </ul>
 
 </details>
-
 
 ## 0. Import and read data
 
@@ -52,19 +51,23 @@ from sklearn.metrics import mean_squared_error
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.svm import LinearSVR
+
+plt.style.use('seaborn-v0_8-white')
 ```
 
 
 ```python
-df = pd.read_csv('./data/processed/intermediate-data.csv')
+df = pd.read_csv('./data/intermediate/intermediate-data.csv')
+df = df.drop('Unnamed: 0', axis=1)
 df['town'] = df['town'].replace({'KALLANG/WHAMPOA': 'KALLANG'})
+
 df.shape
 ```
 
 
 
 
-    (133473, 18)
+    (133473, 16)
 
 
 
@@ -195,14 +198,6 @@ df.head().T
       <td>265000.0</td>
     </tr>
     <tr>
-      <th>key</th>
-      <td>ANG MO KIO AVENUE 10</td>
-      <td>ANG MO KIO AVENUE 4</td>
-      <td>ANG MO KIO AVENUE 5</td>
-      <td>ANG MO KIO AVENUE 10</td>
-      <td>ANG MO KIO AVENUE 5</td>
-    </tr>
-    <tr>
       <th>postal</th>
       <td>560406.0</td>
       <td>560108.0</td>
@@ -227,14 +222,6 @@ df.head().T
       <td>103.835132</td>
     </tr>
     <tr>
-      <th>street_name_y</th>
-      <td>ANG MO KIO AVENUE 10</td>
-      <td>ANG MO KIO AVENUE 4</td>
-      <td>ANG MO KIO AVENUE 5</td>
-      <td>ANG MO KIO AVENUE 10</td>
-      <td>ANG MO KIO AVENUE 5</td>
-    </tr>
-    <tr>
       <th>building</th>
       <td>HDB-ANG MO KIO</td>
       <td>KEBUN BARU HEIGHTS</td>
@@ -255,12 +242,15 @@ df.head().T
 </div>
 
 
+
 Checking for null/NaN data. In this case the percentage of rows having missing data are low, so it's safe to drop them
 
 
 ```python
 df.isnull().mean()
 ```
+
+
 
 
     month                  0.000000
@@ -274,11 +264,9 @@ df.isnull().mean()
     lease_commence_date    0.000000
     remaining_lease        0.000000
     resale_price           0.000000
-    key                    0.000000
     postal                 0.018513
     latitude               0.018513
     longitude              0.018513
-    street_name_y          0.018513
     building               0.018513
     address                0.018513
     dtype: float64
@@ -295,10 +283,8 @@ Now let's look at the overall distribution of resale price, henceforth also refe
 The distribution is right-skewed with few but very high values. The median value (SGD 440k) is lower than average (SGD 470k)
 
 
-
 ```python
 fig, axes = plt.subplots(2, 1, figsize=(11, 5), sharex=True, height_ratios=[1, 6])
-
 
 df['resale_price'].hist(
     ec='white',
@@ -311,7 +297,7 @@ axes[1].axvline(df['resale_price'].mean(), ls='--', c='red', label=f"avg = SGD {
 axes[1].axvline(df['resale_price'].median(), ls='--', c='k', label=f"median = SGD {df['resale_price'].median():,.0f}")
 axes[1].set_xticks([_ * 100_000 for _ in range(14)], labels=[_ * 100 for _ in range(14)])
 axes[1].set_xlabel('Unit: thousands SGD')
-axes[1].legend()
+axes[1].legend(fontsize=14)
 axes[0].axis('off')
 sns.despine(ax=axes[1])
 
@@ -322,7 +308,7 @@ fig.tight_layout()
 ```
 
 
-    
+
 ![png](/assets/images/posts/01-predict-hdb-resale_files/01-predict-hdb-resale_12_0.png)
     
 
@@ -343,6 +329,7 @@ ax.axvline(x=0, c='k')
 ax.set_title('Correlation with resale price')
 sns.despine(ax=ax)
 ```
+
 
     
 ![png](/assets/images/posts/01-predict-hdb-resale_files/01-predict-hdb-resale_15_0.png)
@@ -373,11 +360,6 @@ sns.heatmap(
 
 
 
-    <AxesSubplot: >
-
-
-
-
     
 ![png](/assets/images/posts/01-predict-hdb-resale_files/01-predict-hdb-resale_17_1.png)
     
@@ -387,15 +369,7 @@ sns.heatmap(
 
 `block`, `building`, `address` contains too many categories. This might cause overfitting or computational issues then we will not be using those variables.
 
-Perhaps the most useful feature we can use here is `flat_type`. The possible values are:
-- 2 ROOM
-- 3 ROOM
-- 4 ROOM
-- 5 ROOM
-- Executive
-- Multi-generationla
-
-There are a few ways to deal with this data. For simplicity, I will convert them to number of rooms so we can have a nice numeric value.
+Perhaps the most useful feature we can use here is `flat_type`. The possible values are: `2 ROOM` , `3 ROOM`, `4 ROOM`, `5 ROOM`, `Executive`, `Multi-generationl`. There are a few ways to deal with this data. For simplicity, I will convert them to number of rooms so we can have a nice numeric value.
 
 
 ```python
@@ -413,8 +387,6 @@ df.select_dtypes('object').nunique()
     storey_range         17
     flat_model           21
     remaining_lease     653
-    key                 556
-    street_name_y       556
     building            612
     address            8896
     dtype: int64
@@ -427,19 +399,35 @@ fig, ax = plt.subplots(figsize=(9, 4))
 
 sns.boxplot(
     data=df,
-    y='resale_price',
-    x='flat_type',
+    x='resale_price',
+    y='flat_model',
     palette="Reds",
     showfliers=False,
-    ax=ax)
+    ax=ax).set_title('`flat_model` has too many categories')
 ```
-
-
-
 
 
     
 ![png](/assets/images/posts/01-predict-hdb-resale_files/01-predict-hdb-resale_20_1.png)
+    
+
+
+
+```python
+fig, ax = plt.subplots(figsize=(9, 4))
+
+sns.boxplot(
+    data=df,
+    x='resale_price',
+    y='flat_type',
+    palette="Reds",
+    showfliers=False,
+    ax=ax).set_title('`flat_type` has a few categories and has little overlap. Making this a good feature')
+```
+
+
+    
+![png](/assets/images/posts/01-predict-hdb-resale_files/01-predict-hdb-resale_21_1.png)
     
 
 
@@ -448,7 +436,6 @@ sns.boxplot(
 Intuitively, we know that location is one of the most important factor in determining house prices. We will need a way to add this information to our model. To visualize the impact of location, I've created a choropleth map.
 
 It's visible from the map that the further towns have lower price range. 
-
 
 <details>
 <summary>Show code</summary>
@@ -464,8 +451,6 @@ It's visible from the map that the further towns have lower price range.
             </iframe>
     </div>
 </div><br>
-
-
 
 To determine how central a location it, I will calculate the straight line distance to a center point. For Singapore, I've selected the point having coordinate value `CITY_CENTER = (1.28019, 103.85175)`. This point was picked by eyeballing on google map.
 
@@ -491,8 +476,6 @@ def haversine(lon1, lat1, lon2, lat2):
     return c * r
 
 
-CITY_CENTER = (1.2801990449115896, 103.85175675603243)
-
 df['distance_from_center'] = df.apply(
     lambda x: haversine(
         x['longitude'],
@@ -501,7 +484,7 @@ df['distance_from_center'] = df.apply(
         CITY_CENTER[0]), axis=1)
 ```
 
-### Distacne to nearest MRT station
+### Distance to the nearest MRT station
 
 Other than distance to city center, close priximity to amenities and public transportations could also make the flats more attractive and hence having higher price. I will now calculate distance from the nearest MRT station to each of the HDB block.
 
@@ -584,6 +567,7 @@ numerical_feature_cols = [
     'floor_area_sqm',
     ]
 
+
 fig, axes = plt.subplots(1, len(numerical_feature_cols), figsize=(16, 6))
 
 for idx, col_name in enumerate(numerical_feature_cols):
@@ -594,18 +578,21 @@ for idx, col_name in enumerate(numerical_feature_cols):
 
 fig.tight_layout()
 ```
+
+
     
-![png](/assets/images/posts/01-predict-hdb-resale_files/01-predict-hdb-resale_30_0.png)
+![png](/assets/images/posts/01-predict-hdb-resale_files/01-predict-hdb-resale_32_0.png)
     
+
+
 
 ```python
 # remove outliers
 df = df[df['floor_area_sqm'] <= df['floor_area_sqm'].quantile(.95)]
 df = df.dropna()
 df = df.reset_index(drop=True)
-```
 
-```python
+
 # correlation between numeric variables and target
 fig, ax = plt.subplots()
 df.drop('resale_price', axis=1) \
@@ -619,15 +606,9 @@ sns.despine(ax=ax)
 
 
     
-![png](/assets/images/posts/01-predict-hdb-resale_files/01-predict-hdb-resale_32_0.png)
+![png](/assets/images/posts/01-predict-hdb-resale_files/01-predict-hdb-resale_34_0.png)
     
 
-
-
-```python
-# save cleaned data for reusing later
-df.to_csv('./data/final/cleaned-data.csv', index=False)
-```
 
 ## 3. Split train-test data
 
@@ -647,10 +628,10 @@ I will first fit a simple estimator, which will be used as baseline.
 
 
 ```python
-model = LinearRegression()
-print(f'fitting {model.__class__.__name__}')
-model.fit(X_train, y_train)
-preds = model.predict(X_test)
+lr_model = LinearRegression()
+print(f'fitting {lr_model.__class__.__name__}')
+lr_model.fit(X_train, y_train)
+preds = lr_model.predict(X_test)
 rmse = mean_squared_error(y_test, preds, squared=False)
 print(f'{rmse=:,.0f}')
 ```
@@ -663,24 +644,24 @@ print(f'{rmse=:,.0f}')
 
 
 ```python
-model = RandomForestRegressor(max_depth=20, n_estimators=100)
-print(f'fitting {model.__class__.__name__}')
-model.fit(X_train, y_train)
-preds = model.predict(X_test)
+rf_model = RandomForestRegressor(max_depth=20, n_estimators=100)
+print(f'fitting {rf_model.__class__.__name__}')
+rf_model.fit(X_train, y_train)
+preds = rf_model.predict(X_test)
 rmse = mean_squared_error(y_test, preds, squared=False)
 print(f'{rmse=:,.0f}')
 ```
 
     fitting RandomForestRegressor
-    rmse=33,511
+    rmse=33,531
 
 
 
 ```python
-model = GradientBoostingRegressor()
-print(f'fitting {model.__class__.__name__}')
-model.fit(X_train, y_train)
-preds = model.predict(X_test)
+gb_model = GradientBoostingRegressor()
+print(f'fitting {gb_model.__class__.__name__}')
+gb_model.fit(X_train, y_train)
+preds = gb_model.predict(X_test)
 rmse = mean_squared_error(y_test, preds, squared=False)
 print(f'{rmse=:,.0f}')
 ```
@@ -691,34 +672,61 @@ print(f'{rmse=:,.0f}')
 
 
 ```python
-model = LinearSVR()
-print(f'fitting {model.__class__.__name__}')
-model.fit(X_train, y_train)
-preds = model.predict(X_test)
+svr_model = LinearSVR()
+print(f'fitting {svr_model.__class__.__name__}')
+svr_model.fit(X_train, y_train)
+preds = svr_model.predict(X_test)
 rmse = mean_squared_error(y_test, preds, squared=False)
 print(f'{rmse=:,.0f}')
 ```
 
     fitting LinearSVR
-    rmse=81,673
+    rmse=81,687
+
+
+#### Making predictions on sample data
+
+To get more specific sense of each model's performace, we can select random test data and check for each model's predictions
+
+
+```python
+# select random indices
+idx = np.random.choice(X_test.index, size=3)
+
+sample_predictions = {}
+
+for model in [lr_model, rf_model, gb_model, svr_model]:
+    sample_predictions[model.__class__.__name__] = model.predict(X_test.loc[idx])
+
+sample_predictions['Ground Truth'] = y_test[idx]
+sample_predictions = pd.DataFrame(sample_predictions)
+
+pd.DataFrame(sample_predictions).plot(
+    kind='bar',
+    rot=0,
+    xlabel='flat id',
+    ylabel='SGD') \
+    .legend(
+        loc='center left',
+        bbox_to_anchor=(1.0, 0.5))
+```
+![png](/assets/images/posts/01-predict-hdb-resale_files/01-predict-hdb-resale_47_1.png)
+    
 
 
 Out of the few models above, RandomForests perform the best. With a RMSE of 33.4k. In real terms, for a property that cost on average close to 500k, being off by 33k is decent.
 
 However, there are a lot more that we can do here:
     1. Selecting different models
-    2. Changing hyperparameters
-
+    2. Optimizing hyperparameters, for example, using GridSearch or Hyperopt.
 
 Without mlflow, we will have to manually keep track of model parameteres, data sources, metrics, etc (such as in a google sheet). This is prone to errors and hard to keep track.
 
-
 ## 5. Summary (so far)
 
-- I've built some simple models to predict HDB resale prices. In addition to the given features (eg. living area, town name, flat type), I've added 2 features to measure centrality and proximity to MRT stations.
 
-- RandomForest performs the best. The number of relatively uncorrelated trees operating as a committee will outperform most single complex model. We can improve the prediction by adding more relevant features such as to good schools, shopping malls, other amenities, etc.
+I created basic HDB resale price prediction models with two additional features for centrality and proximity to MRT stations, on top of existing features such as living area, town name, and flat type.
 
-- Conceptually, there could be other ways to predict house price, such as using a Time Series model (such as ARIMA)
+RandomForest outperforms single complex models due to its use of many relatively uncorrelated trees as a committee. Further improvement to predictions can be achieved by adding more relevant features, such as proximity to good schools, shopping malls, and other amenities.
 
-_That's the end of part 1. In the next post of this series I will write about mlflow_
+House prices could also be predicted using a Time Series model like ARIMA, among other potential approaches.
