@@ -1,0 +1,1634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="google-translate-customization" content="108d9124921d80c3-80e20d618ff053c8-g4f02ec6f3dba68b7-c">
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Analyzing Singapore’s HDB flats resale price | My data science projects</title>
+<meta name="generator" content="Jekyll v4.3.2">
+<meta property="og:title" content="Analyzing Singapore’s HDB flats resale price">
+<meta name="author" content="Vo Duy Do">
+<meta property="og:locale" content="en_US">
+<meta name="description" content="Explore &amp; model Singapore’s HDB flats resale price using different prediction models. Engineering new features such as centrality and proximity to MRT stations. Out of the box, RandomForest performs better than single complex models with minimal hyperparameters tuning">
+<meta property="og:description" content="Explore &amp; model Singapore’s HDB flats resale price using different prediction models. Engineering new features such as centrality and proximity to MRT stations. Out of the box, RandomForest performs better than single complex models with minimal hyperparameters tuning">
+<link rel="canonical" href="https://dobeok.github.io//jekyll-theme-yat/2023/03/08/predict-hdb-resale.html">
+<meta property="og:url" content="https://dobeok.github.io//jekyll-theme-yat/2023/03/08/predict-hdb-resale.html">
+<meta property="og:site_name" content="My data science projects">
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2023-03-08T05:00:00+00:00">
+<meta name="twitter:card" content="summary">
+<meta property="twitter:title" content="Analyzing Singapore’s HDB flats resale price">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Vo Duy Do"},"dateModified":"2023-03-08T05:00:00+00:00","datePublished":"2023-03-08T05:00:00+00:00","description":"Explore &amp; model Singapore’s HDB flats resale price using different prediction models. Engineering new features such as centrality and proximity to MRT stations. Out of the box, RandomForest performs better than single complex models with minimal hyperparameters tuning","headline":"Analyzing Singapore’s HDB flats resale price","mainEntityOfPage":{"@type":"WebPage","@id":"https://dobeok.github.io//jekyll-theme-yat/2023/03/08/predict-hdb-resale.html"},"url":"https://dobeok.github.io//jekyll-theme-yat/2023/03/08/predict-hdb-resale.html"}</script>
+<!-- End Jekyll SEO tag -->
+<!-- <link rel="shortcut icon" href="https://dobeok.github.io//jekyll-theme-yat/favicon.ico" /> -->
+  <link rel="icon" href="/assets/images/icon.svg">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-noto-sans@0.0.72/index.min.css">
+  
+  
+  <link rel="stylesheet" href="/jekyll-theme-yat/assets/css/main.css">
+  <script src="/jekyll-theme-yat/assets/js/main.js"></script><link type="application/atom+xml" rel="alternate" href="https://dobeok.github.io//jekyll-theme-yat/feed.xml" title="My data science projects">
+<script>
+  function initGoogleAnalytics() {
+    var doNotTrack = (window.doNotTrack === "1" || navigator.doNotTrack === "1" ||
+      navigator.doNotTrack === "yes" || navigator.msDoNotTrack === "1");
+    var enableDNT = "true" == "true";
+
+    if (!enableDNT || !doNotTrack) {
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'G-13G9T0DNE2', 'auto');
+      ga('send', 'pageview');
+    }
+  }
+  window.addEventListener("load", initGoogleAnalytics);
+</script>
+
+<!-- <link rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/default.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js"></script> -->
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/base16/material.min.css">
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+
+
+
+
+<!-- and it's easy to individually load additional languages -->
+<script charset="UTF-8" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/languages/go.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+// Init highlight js
+document.addEventListener('DOMContentLoaded', function(event) {
+  var els = document.querySelectorAll('pre code')
+
+  function addLangData(block) {
+    var outer = block.parentElement.parentElement.parentElement;
+    var lang = block.getAttribute('data-lang');
+    for (var i = 0; i < outer.classList.length; i++) {
+      var cls = outer.classList[i];
+      if (cls.startsWith('language-')) {
+        lang = cls;
+        break;
+      }
+    }
+    if (!lang) {
+      cls = block.getAttribute('class');
+      lang = cls ? cls.replace('hljs ', '') : '';
+    }
+    if (lang.startsWith('language-')) {
+      lang = lang.substr(9);
+    }
+    block.setAttribute('class', 'hljs ' + lang);
+    block.parentNode.setAttribute('data-lang', lang);
+  }
+
+  function addBadge(block) {
+    var enabled = ('true' || 'true').toLowerCase();
+    if (enabled == 'true') {
+      var pre = block.parentElement;
+      pre.classList.add('badge');
+    }
+  }
+
+  function handle(block) {
+    addLangData(block);
+    addBadge(block)
+    hljs.highlightBlock(block);
+  }
+
+  for (var i = 0; i < els.length; i++) {
+    var el = els[i];
+    handle(el);
+  }
+});
+</script>
+
+<style>
+  /* code language badge */
+  pre.badge::before {
+    content: attr(data-lang);
+    /* color: #f0f0f0; */
+    color: #fff;
+    /* background-color: #ff4e00; */
+    background-color: #000000 ;
+    padding: 0 .5em;
+    border-radius: 0 2px;
+    text-transform: uppercase;
+    text-align: center;
+    min-width: 32px;
+    display: inline-block;
+    position: absolute;
+    right: 0;
+  }
+
+  /* fix wrong badge display for firefox browser */
+  code > table pre::before {
+    display: none;
+  }
+</style>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-13G9T0DNE2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-13G9T0DNE2');
+</script>
+</head>
+<body>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<header class="site-header " role="banner">
+
+  <div class="wrapper">
+    <div class="site-header-inner">
+<span class="site-brand"><a class="site-brand-inner" rel="author" href="/jekyll-theme-yat/">
+  <img class="site-favicon" title="My data science projects" src="/assets/images/icon.svg" onerror="this.style.display='none'">
+  My data science projects
+  <!-- left hand side favicon and title - optional - I removed to clean up -->
+</a>
+</span><nav class="site-nav">
+          <input type="checkbox" id="nav-trigger" class="nav-trigger">
+          <label for="nav-trigger">
+            <span class="menu-icon">
+              <svg viewbox="0 0 18 15" width="18px" height="15px">
+                <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"></path>
+              </svg>
+            </span>
+          </label>
+
+          <div class="trigger">
+<a class="page-link" href="/jekyll-theme-yat/">Home</a><a class="page-link" href="/jekyll-theme-yat/about.html">About Me</a><!--
+
+
+
+
+
+
+
+
+
+<span class="page-link">
+
+
+
+<div id="google_translate_element" style="display: none;">
+</div>
+
+<span class="ct-language">
+  <ul class="list-unstyled ct-language-dropdown">
+    
+      <li>
+        <a href="#" class="lang-select" data-lang="en">
+          
+          <img src="https://cdn.countryflags.com/thumbs/united-states-of-america/flag-400.png" title="English">
+          
+        </a>
+      </li>
+    
+      <li>
+        <a href="#" class="lang-select" data-lang="vi">
+          
+          <img src="https://cdn.countryflags.com/thumbs/vietnam/flag-400.png" title="Vietnamese">
+          
+        </a>
+      </li>
+    
+  </ul>
+</span>
+
+<script type="text/javascript">
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({
+    pageLanguage: 'en',
+    autoDisplay: false,
+    layout: google.translate.TranslateElement.InlineLayout.VERTICAL
+  }, 'google_translate_element');
+
+  // Links to cross-origin destinations are unsafe
+  var gll = document.getElementsByClassName('goog-logo-link')[0];
+  if (gll) {
+    gll.setAttribute('rel', 'noopener');
+  }
+
+  function restoreLang() {
+    var iframe = document.getElementsByClassName('goog-te-banner-frame')[0];
+    if (!iframe) return;
+
+    var innerDoc = iframe.contentDocument || iframe.contentWindow.document;
+    var restore_el = innerDoc.getElementsByTagName("button");
+
+    for (var i = 0; i < restore_el.length; i++) {
+      if (restore_el[i].id.indexOf("restore") >= 0) {
+        restore_el[i].click();
+        var close_el = innerDoc.getElementsByClassName("goog-close-link");
+        close_el[0].click();
+        return;
+      }
+    }
+  }
+
+  function triggerHtmlEvent(element, eventName) {
+    var event;
+    if (document.createEvent) {
+      event = document.createEvent('HTMLEvents');
+      event.initEvent(eventName, true, true);
+      element.dispatchEvent(event);
+    } else {
+      event = document.createEventObject();
+      event.eventType = eventName;
+      element.fireEvent('on' + event.eventType, event);
+    }
+  }
+
+  var googleCombo = document.querySelector("select.goog-te-combo");
+  var langSelect = document.querySelector('.ct-language');
+  langSelect.addEventListener('click', function(event) {
+    if (!event.target) {
+      return;
+    }
+
+    var selected = document.querySelector('.ct-language .ct-language-selected');
+    if (selected) {
+      selected.classList.remove('ct-language-selected');
+    }
+
+    var target = event.target;
+    while (target && target !== langSelect ) {
+      if (target.matches('.lang-select')) {
+        break;
+      }
+      target = target.parentElement;
+    }
+
+    if (target && target.matches('.lang-select')) {
+      var lang = target.getAttribute('data-lang');
+      if (googleCombo.value == lang) {
+        restoreLang();
+      } else {
+        target.parentElement.classList.add('ct-language-selected');
+        googleCombo.value = lang;
+        triggerHtmlEvent(googleCombo, 'change');
+      }
+    }
+
+    event.preventDefault();
+  });
+}
+</script>
+
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+</span> -->
+</div>
+        </nav>
+</div>
+  </div>
+</header>
+
+<script>
+  function initHeader() {
+    var lastScrollY = getScrollPos().y;
+    var documentElement = document.documentElement;
+
+    function storeScrollData() {
+      var y = getScrollPos().y;documentElement.setAttribute("data-header-transparent", "");var scrollStatus = "";
+
+      if (y <= 0) {
+        scrollStatus = "top";
+      } else if ((window.innerHeight + y) >= document.body.offsetHeight) {
+        scrollStatus = "bottom";
+      } else {
+        var isScrollDown = (y - lastScrollY > 0) ? true : false;
+        scrollStatus = isScrollDown ? "down" : "up";
+      }
+
+      lastScrollY = y;
+      documentElement.setAttribute("data-scroll-status", scrollStatus);
+    }
+
+    window.addEventListener('scroll', function(e) {
+      storeScrollData();
+    });
+
+    storeScrollData();
+  }
+  document.addEventListener('DOMContentLoaded', initHeader);
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+  function hashLocate(hashValue) {
+    hashValue = hashValue.replace(/^.*#h-/, '');
+    hashValue = decodeURIComponent(hashValue);
+    var element = document.getElementById(hashValue);
+
+    if (!element) {
+      return;
+    }
+
+    var header = document.querySelector('header.site-header');
+    var headerRect = header.getBoundingClientRect();
+    var headerTop = Math.floor(headerRect.top);
+    var headerHeight = Math.floor(headerRect.height);
+    var scrollPos = getScrollPos();
+    var offsetY = element.offsetTop - (headerTop + headerHeight + 20);
+
+    if (offsetY == scrollPos.y) {
+      return;
+    }
+
+    if (headerTop == 0  && offsetY > scrollPos.y) {
+      offsetY += headerHeight + 2;
+    } else if (headerTop < 0  && offsetY < scrollPos.y) {
+      offsetY -= headerHeight - 2;
+    }
+
+    smoothScrollTo(offsetY);
+  }
+
+  // The first event occurred
+  window.addEventListener('load', function(event) {
+    if (window.location.hash) {
+      hashLocate(window.location.hash);
+    }
+  });
+
+  // The first event occurred
+  window.addEventListener('click', function(event) {
+    if (event.target.tagName.toLowerCase() == 'a') {
+      hashLocate(event.target.getAttribute('href'));
+    }
+  });
+</script>
+<!--<div class="theme-toggle">
+  <input type="checkbox" id="theme-switch">
+  <label for="theme-switch">
+    <div class="toggle"></div>
+    <div class="names">
+      <p class="light">Light</p>
+      <p class="dark">Dark</p>
+    </div>
+  </label>
+</div>
+
+
+
+
+<script>
+  (function() {
+    var sw = document.getElementById('theme-switch');
+    var html = document.getElementsByTagName('html')[0];
+    var nightModeOption = ('off' || 'auto').toLowerCase();
+    var storage = nightModeOption === 'manual'
+        ? localStorage
+        : sessionStorage;
+    var themeData = loadThemeData();
+
+    function saveThemeData(data) {
+      storage.setItem('theme', JSON.stringify(data));
+    }
+
+    function loadThemeData() {
+      var data = storage.getItem('theme');
+      try {
+        data = JSON.parse(data ? data : '');
+      } catch(e) {
+        data = { nightShift: undefined, autoToggleAt: 0 };
+        saveThemeData(data);
+      }
+      return data;
+    }
+
+    function handleThemeToggle(nightShift) {
+      themeData.nightShift = nightShift;
+      saveThemeData(themeData);
+      html.dataset.theme = nightShift ? 'dark' : 'light';
+      setTimeout(function() {
+        sw.checked = nightShift ? true : false;
+      }, 50);
+    }
+
+    function autoThemeToggle() {
+      // Next time point of theme toggle
+      var now = new Date();
+      var toggleAt = new Date();
+      var hours = now.getHours();
+      var nightShift = hours >= 19 || hours <=7;
+
+      if (nightShift) {
+        if (hours > 7) {
+          toggleAt.setDate(toggleAt.getDate() + 1);
+        }
+        toggleAt.setHours(7);
+      } else {
+        toggleAt.setHours(19);
+      }
+
+      toggleAt.setMinutes(0);
+      toggleAt.setSeconds(0);
+      toggleAt.setMilliseconds(0)
+
+      var delay = toggleAt.getTime() - now.getTime();
+
+      // auto toggle theme mode
+      setTimeout(function() {
+        handleThemeToggle(!nightShift);
+      }, delay);
+
+      return {
+        nightShift: nightShift,
+        toggleAt: toggleAt.getTime()
+      };
+    }
+
+    // Listen the theme toggle event
+    sw.addEventListener('change', function(event) {
+      handleThemeToggle(event.target.checked);
+    });
+
+    if (nightModeOption == 'auto') {
+      var data = autoThemeToggle();
+
+      // Toggle theme by local setting
+      if (data.toggleAt > themeData.autoToggleAt) {
+        themeData.autoToggleAt = data.toggleAt;
+        handleThemeToggle(data.nightShift);
+      } else {
+        handleThemeToggle(themeData.nightShift);
+      }
+    } else if (nightModeOption == 'manual') {
+      handleThemeToggle(themeData.nightShift);
+    } else {
+      var nightShift = themeData.nightShift;
+      if (nightShift === undefined) {
+        nightShift = nightModeOption === 'on';
+      }
+      handleThemeToggle(nightShift);
+    }
+  })();
+</script>
+--><div id="click-to-top" class="click-to-top">
+  <i class="fa fa-arrow-up"></i>
+</div>
+<script>
+  (function () {
+    const clickToTop = document.getElementById('click-to-top');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 100) {
+        clickToTop.classList.add('show')
+      }else {
+        clickToTop.classList.remove('show')
+      }
+    });
+    clickToTop.addEventListener('click', () => {
+      window.smoothScrollTo(0);
+    });
+  })();
+</script>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <div class="framework">
+  <section class="main">
+
+     <br>
+<div class="post">
+  <section>
+    
+    <!-- custom title in each post  -->
+    <p style="color:black;font-weight:bold;font-size:180%;">Analyzing Singapore's HDB flats resale price</p>
+    <hr>
+
+
+
+
+
+
+
+
+
+<article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+    <div class="post-content e-content" itemprop="articleBody">
+
+      <p>In this series I will be modeling Singapore’s HDB flats resale price. The first part is about building a model, following a standard ML problem process (EDA, Feature Engineering, Split train/test data, Fit model, Evaluation). The second part (coming soon™) will be about mlops. I will use <code class="language-plaintext highlighter-rouge">mlflow</code> to track and manage experiments &amp; models.</p>
+
+<p>Part 1 (This post)</p>
+<ul>
+  <li>Train different models to predict resale price for Singapore’s HDB</li>
+</ul>
+
+<p>Part 2 (Coming soon™)</p>
+<ul>
+  <li>Run &amp; Log experiments and models using <code class="language-plaintext highlighter-rouge">mlflow</code>
+</li>
+  <li>Save models to model registry</li>
+  <li>Load and serve the best model</li>
+</ul>
+
+<details><summary>What are HDB flats?</summary>
+    <ul>
+    <li> HDB (Housing and Development Board) buildings are public housing blocks in Singapore. They were built and managed by the Housing and Development Board (HDB), a statutory board under the Ministry of National Development. 
+    </li>
+<li>
+    HDB flats range from studio apartments to executive apartments, and are available for purchase or rent. Today 80% of Singapore's population live in HDB flats.
+    </li>
+    
+    <li>
+    HDB flats are typically located in housing estates, which are self-contained communities with amenities such as schools, markets, and parks. The HDB also manages and maintains the estates, ensuring that they remain safe, clean and well-maintained.
+    </li>
+    </ul>
+
+</details>
+
+<h2 id="0-import-and-read-data">0. Import and read data</h2>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="n">pandas</span> <span class="k">as</span> <span class="n">pd</span>
+<span class="kn">import</span> <span class="n">numpy</span> <span class="k">as</span> <span class="n">np</span>
+
+<span class="kn">import</span> <span class="n">matplotlib.pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">import</span> <span class="n">seaborn</span> <span class="k">as</span> <span class="n">sns</span>
+
+<span class="kn">import</span> <span class="n">geopandas</span> <span class="k">as</span> <span class="n">gpd</span>
+<span class="kn">from</span> <span class="n">shapely.geometry</span> <span class="kn">import</span> <span class="n">Point</span>
+<span class="kn">import</span> <span class="n">folium</span>
+
+<span class="kn">from</span> <span class="n">math</span> <span class="kn">import</span> <span class="n">radians</span><span class="p">,</span> <span class="n">cos</span><span class="p">,</span> <span class="n">sin</span><span class="p">,</span> <span class="n">asin</span><span class="p">,</span> <span class="n">sqrt</span>
+
+<span class="kn">from</span> <span class="n">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span> <span class="n">sklearn.metrics</span> <span class="kn">import</span> <span class="n">mean_squared_error</span>
+<span class="kn">from</span> <span class="n">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LinearRegression</span>
+<span class="kn">from</span> <span class="n">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestRegressor</span><span class="p">,</span> <span class="n">GradientBoostingRegressor</span>
+<span class="kn">from</span> <span class="n">sklearn.svm</span> <span class="kn">import</span> <span class="n">LinearSVR</span>
+
+<span class="n">plt</span><span class="p">.</span><span class="n">style</span><span class="p">.</span><span class="nf">use</span><span class="p">(</span><span class="s">'seaborn-v0_8-white'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="nf">read_csv</span><span class="p">(</span><span class="s">'./data/intermediate/intermediate-data.csv'</span><span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="nf">drop</span><span class="p">(</span><span class="s">'Unnamed: 0'</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s">'town'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">'town'</span><span class="p">].</span><span class="nf">replace</span><span class="p">({</span><span class="s">'KALLANG/WHAMPOA'</span><span class="p">:</span> <span class="s">'KALLANG'</span><span class="p">})</span>
+
+<span class="n">df</span><span class="p">.</span><span class="n">shape</span>
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(133473, 16)
+</code></pre></div></div>
+
+<h2 id="1-exploratory-data-analysis">1. Exploratory Data Analysis</h2>
+
+<p>Preview dataset</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df</span><span class="p">.</span><span class="nf">head</span><span class="p">().</span><span class="n">T</span>
+</code></pre></div></div>
+
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>
+</th>
+      <th>0</th>
+      <th>1</th>
+      <th>2</th>
+      <th>3</th>
+      <th>4</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>month</th>
+      <td>2017-01</td>
+      <td>2017-01</td>
+      <td>2017-01</td>
+      <td>2017-01</td>
+      <td>2017-01</td>
+    </tr>
+    <tr>
+      <th>town</th>
+      <td>ANG MO KIO</td>
+      <td>ANG MO KIO</td>
+      <td>ANG MO KIO</td>
+      <td>ANG MO KIO</td>
+      <td>ANG MO KIO</td>
+    </tr>
+    <tr>
+      <th>flat_type</th>
+      <td>2 ROOM</td>
+      <td>3 ROOM</td>
+      <td>3 ROOM</td>
+      <td>3 ROOM</td>
+      <td>3 ROOM</td>
+    </tr>
+    <tr>
+      <th>block</th>
+      <td>406</td>
+      <td>108</td>
+      <td>602</td>
+      <td>465</td>
+      <td>601</td>
+    </tr>
+    <tr>
+      <th>street_name_x</th>
+      <td>ANG MO KIO AVE 10</td>
+      <td>ANG MO KIO AVE 4</td>
+      <td>ANG MO KIO AVE 5</td>
+      <td>ANG MO KIO AVE 10</td>
+      <td>ANG MO KIO AVE 5</td>
+    </tr>
+    <tr>
+      <th>storey_range</th>
+      <td>10 TO 12</td>
+      <td>01 TO 03</td>
+      <td>01 TO 03</td>
+      <td>04 TO 06</td>
+      <td>01 TO 03</td>
+    </tr>
+    <tr>
+      <th>floor_area_sqm</th>
+      <td>44.0</td>
+      <td>67.0</td>
+      <td>67.0</td>
+      <td>68.0</td>
+      <td>67.0</td>
+    </tr>
+    <tr>
+      <th>flat_model</th>
+      <td>Improved</td>
+      <td>New Generation</td>
+      <td>New Generation</td>
+      <td>New Generation</td>
+      <td>New Generation</td>
+    </tr>
+    <tr>
+      <th>lease_commence_date</th>
+      <td>1979</td>
+      <td>1978</td>
+      <td>1980</td>
+      <td>1980</td>
+      <td>1980</td>
+    </tr>
+    <tr>
+      <th>remaining_lease</th>
+      <td>61 years 04 months</td>
+      <td>60 years 07 months</td>
+      <td>62 years 05 months</td>
+      <td>62 years 01 month</td>
+      <td>62 years 05 months</td>
+    </tr>
+    <tr>
+      <th>resale_price</th>
+      <td>232000.0</td>
+      <td>250000.0</td>
+      <td>262000.0</td>
+      <td>265000.0</td>
+      <td>265000.0</td>
+    </tr>
+    <tr>
+      <th>postal</th>
+      <td>560406.0</td>
+      <td>560108.0</td>
+      <td>560602.0</td>
+      <td>560465.0</td>
+      <td>560601.0</td>
+    </tr>
+    <tr>
+      <th>latitude</th>
+      <td>1.362005</td>
+      <td>1.370966</td>
+      <td>1.380709</td>
+      <td>1.366201</td>
+      <td>1.381041</td>
+    </tr>
+    <tr>
+      <th>longitude</th>
+      <td>103.85388</td>
+      <td>103.838202</td>
+      <td>103.835368</td>
+      <td>103.857201</td>
+      <td>103.835132</td>
+    </tr>
+    <tr>
+      <th>building</th>
+      <td>HDB-ANG MO KIO</td>
+      <td>KEBUN BARU HEIGHTS</td>
+      <td>YIO CHU KANG GREEN</td>
+      <td>TECK GHEE HORIZON</td>
+      <td>YIO CHU KANG GREEN</td>
+    </tr>
+    <tr>
+      <th>address</th>
+      <td>406 ANG MO KIO AVENUE 10 HDB-ANG MO KIO SINGAP…</td>
+      <td>108 ANG MO KIO AVENUE 4 KEBUN BARU HEIGHTS SIN…</td>
+      <td>602 ANG MO KIO AVENUE 5 YIO CHU KANG GREEN SIN…</td>
+      <td>465 ANG MO KIO AVENUE 10 TECK GHEE HORIZON SIN…</td>
+      <td>601 ANG MO KIO AVENUE 5 YIO CHU KANG GREEN SIN…</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Checking for null/NaN data. In this case the percentage of rows having missing data are low, so it’s safe to drop them</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df</span><span class="p">.</span><span class="nf">isnull</span><span class="p">().</span><span class="nf">mean</span><span class="p">()</span>
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>month                  0.000000
+town                   0.000000
+flat_type              0.000000
+block                  0.000000
+street_name_x          0.000000
+storey_range           0.000000
+floor_area_sqm         0.000000
+flat_model             0.000000
+lease_commence_date    0.000000
+remaining_lease        0.000000
+resale_price           0.000000
+postal                 0.018513
+latitude               0.018513
+longitude              0.018513
+building               0.018513
+address                0.018513
+dtype: float64
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="nf">drop</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s">'latitude'</span><span class="p">].</span><span class="nf">isnull</span><span class="p">()].</span><span class="n">index</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Now let’s look at the overall distribution of resale price, henceforth also refered to as the target variable.</p>
+
+<p>The distribution is right-skewed with few but very high values. The median value (SGD 440k) is lower than average (SGD 470k)</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="p">.</span><span class="nf">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">sharex</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">height_ratios</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">])</span>
+
+<span class="n">df</span><span class="p">[</span><span class="s">'resale_price'</span><span class="p">].</span><span class="nf">hist</span><span class="p">(</span>
+    <span class="n">ec</span><span class="o">=</span><span class="s">'white'</span><span class="p">,</span>
+    <span class="n">linewidth</span><span class="o">=</span><span class="p">.</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">bins</span><span class="o">=</span><span class="p">[</span><span class="n">_</span> <span class="o">*</span> <span class="mi">50_000</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="mi">30</span><span class="p">)],</span>
+    <span class="n">grid</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+    <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nf">axvline</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">'resale_price'</span><span class="p">].</span><span class="nf">mean</span><span class="p">(),</span> <span class="n">ls</span><span class="o">=</span><span class="s">'--'</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s">'red'</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s">"avg = SGD </span><span class="si">{</span><span class="n">df</span><span class="p">[</span><span class="s">'resale_price'</span><span class="p">].</span><span class="nf">mean</span><span class="p">()</span><span class="si">:</span><span class="p">,.</span><span class="mi">0</span><span class="n">f</span><span class="si">}</span><span class="s">"</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nf">axvline</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">'resale_price'</span><span class="p">].</span><span class="nf">median</span><span class="p">(),</span> <span class="n">ls</span><span class="o">=</span><span class="s">'--'</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s">'k'</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s">"median = SGD </span><span class="si">{</span><span class="n">df</span><span class="p">[</span><span class="s">'resale_price'</span><span class="p">].</span><span class="nf">median</span><span class="p">()</span><span class="si">:</span><span class="p">,.</span><span class="mi">0</span><span class="n">f</span><span class="si">}</span><span class="s">"</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nf">set_xticks</span><span class="p">([</span><span class="n">_</span> <span class="o">*</span> <span class="mi">100_000</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="mi">14</span><span class="p">)],</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="n">_</span> <span class="o">*</span> <span class="mi">100</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="mi">14</span><span class="p">)])</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nf">set_xlabel</span><span class="p">(</span><span class="s">'Unit: thousands SGD'</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nf">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nf">axis</span><span class="p">(</span><span class="s">'off'</span><span class="p">)</span>
+<span class="n">sns</span><span class="p">.</span><span class="nf">despine</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+<span class="n">sns</span><span class="p">.</span><span class="nf">boxplot</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">'resale_price'</span><span class="p">],</span> <span class="n">orient</span><span class="o">=</span><span class="s">"h"</span><span class="p">,</span> <span class="n">showfliers</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">sns</span><span class="p">.</span><span class="nf">despine</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">left</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">fig</span><span class="p">.</span><span class="nf">suptitle</span><span class="p">(</span><span class="s">'HDB Resale Price Distribution'</span><span class="p">)</span>
+<span class="n">fig</span><span class="p">.</span><span class="nf">tight_layout</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p><img src="/assets/images/posts/01-predict-hdb-resale_files/01-predict-hdb-resale_12_0.png" alt="png"></p>
+
+<h4 id="numerical-variables">Numerical variables</h4>
+
+<p>Correlations between each numeric variables and the target value give us a good sense of how much predicting power they have.</p>
+
+<p>Unsurprisingly, bigger and newer flats are positively correlated with resale price</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="p">.</span><span class="nf">subplots</span><span class="p">()</span>
+<span class="n">df</span><span class="p">.</span><span class="nf">drop</span><span class="p">(</span><span class="s">'resale_price'</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> \
+    <span class="p">.</span><span class="nf">corrwith</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">'resale_price'</span><span class="p">],</span> <span class="n">numeric_only</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> \
+    <span class="p">.</span><span class="nf">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s">'barh'</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">.</span><span class="nf">axvline</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s">'k'</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">.</span><span class="nf">set_title</span><span class="p">(</span><span class="s">'Correlation with resale price'</span><span class="p">)</span>
+<span class="n">sns</span><span class="p">.</span><span class="nf">despine</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><img src="/assets/images/posts/01-predict-hdb-resale_files/01-predict-hdb-resale_15_0.png" alt="png"></p>
+
+<p>We can also study how much feature variables correlate with each other. If we solely care about having a good prediction, then it’s ok to have correlated features! However, if we want to study the impact of each variable, it’s helpful to remove redundant dimensions.</p>
+
+<p>In the heatmap below, <code class="language-plaintext highlighter-rouge">latitude</code> and <code class="language-plaintext highlighter-rouge">postal</code> are highly correlated, we will drop at least 1 of them before fitting the models. However for now we will keep them to create a more useful feature.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">corr_matrix</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="nf">corr</span><span class="p">(</span><span class="n">numeric_only</span><span class="o">=</span><span class="bp">True</span><span class="p">).</span><span class="nf">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="c1"># remove the top triangle of the matrix to simplify the heatmap
+</span><span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="nf">zeros_like</span><span class="p">(</span><span class="n">corr_matrix</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+<span class="n">mask</span><span class="p">[</span><span class="n">np</span><span class="p">.</span><span class="nf">triu_indices_from</span><span class="p">(</span><span class="n">mask</span><span class="p">)]</span> <span class="o">=</span> <span class="bp">True</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="p">.</span><span class="nf">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">sns</span><span class="p">.</span><span class="nf">heatmap</span><span class="p">(</span>
+    <span class="n">corr_matrix</span><span class="p">,</span>
+    <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span>
+    <span class="n">annot</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">cmap</span><span class="o">=</span><span class="n">sns</span><span class="p">.</span><span class="nf">color_palette</span><span class="p">(</span><span class="s">"vlag_r"</span><span class="p">,</span> <span class="n">as_cmap</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+    <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><img src="/assets/images/posts/01-predict-hdb-resale_files/01-predict-hdb-resale_17_1.png" alt="png"></p>
+
+<h4 id="categorical-variables">Categorical variables</h4>
+
+<p><code class="language-plaintext highlighter-rouge">block</code>, <code class="language-plaintext highlighter-rouge">building</code>, <code class="language-plaintext highlighter-rouge">address</code> contains too many categories. This might cause overfitting or computational issues then we will not be using those variables.</p>
+
+<p>Perhaps the most useful feature we can use here is <code class="language-plaintext highlighter-rouge">flat_type</code>. The possible values are: <code class="language-plaintext highlighter-rouge">2 ROOM</code> , <code class="language-plaintext highlighter-rouge">3 ROOM</code>, <code class="language-plaintext highlighter-rouge">4 ROOM</code>, <code class="language-plaintext highlighter-rouge">5 ROOM</code>, <code class="language-plaintext highlighter-rouge">Executive</code>, <code class="language-plaintext highlighter-rouge">Multi-generationl</code>. There are a few ways to deal with this data. For simplicity, I will convert them to number of rooms so we can have a nice numeric value.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df</span><span class="p">.</span><span class="nf">select_dtypes</span><span class="p">(</span><span class="s">'object'</span><span class="p">).</span><span class="nf">nunique</span><span class="p">()</span>
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>month                68
+town                 26
+flat_type             6
+block              2580
+street_name_x       556
+storey_range         17
+flat_model           21
+remaining_lease     653
+building            612
+address            8896
+dtype: int64
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="p">.</span><span class="nf">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+
+<span class="n">sns</span><span class="p">.</span><span class="nf">boxplot</span><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s">'resale_price'</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s">'flat_model'</span><span class="p">,</span>
+    <span class="n">palette</span><span class="o">=</span><span class="s">"Reds"</span><span class="p">,</span>
+    <span class="n">showfliers</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+    <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">).</span><span class="nf">set_title</span><span class="p">(</span><span class="s">'`flat_model` has too many categories'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><img src="/assets/images/posts/01-predict-hdb-resale_files/01-predict-hdb-resale_20_1.png" alt="png"></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="p">.</span><span class="nf">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+
+<span class="n">sns</span><span class="p">.</span><span class="nf">boxplot</span><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s">'resale_price'</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s">'flat_type'</span><span class="p">,</span>
+    <span class="n">palette</span><span class="o">=</span><span class="s">"Reds"</span><span class="p">,</span>
+    <span class="n">showfliers</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+    <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">).</span><span class="nf">set_title</span><span class="p">(</span><span class="s">'`flat_type` has a few categories and has little overlap. Making this a good feature'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><img src="/assets/images/posts/01-predict-hdb-resale_files/01-predict-hdb-resale_21_1.png" alt="png"></p>
+
+<h2 id="2-feature-engineering">2. Feature engineering</h2>
+
+<p>Intuitively, we know that location is one of the most important factor in determining house prices. We will need a way to add this information to our model. To visualize the impact of location, I’ve created a choropleth map.</p>
+
+<p>It’s visible from the map that the further towns have lower price range.</p>
+
+<details>
+<summary>Show code</summary>
+
+<script src="https://gist.github.com/dobeok/6a7a2251a949b3404baf72e546e4ee55.js"></script>
+</details>
+
+<div style="width:100%;">
+    <div style="position:relative;width:100%;height:0;padding-bottom:60%;">
+        <span style="color:#565656">Make this Notebook Trusted to load map: File -&gt; Trust Notebook</span>
+            <iframe src="/assets/images/posts/01-predict-hdb-resale_files/town_map.html" style="position:absolute;width:100%;height:100%;left:0;top:0;border:none !important;" allowfullscreen="" webkitallowfullscreen="" mozallowfullscreen="">
+            </iframe>
+    </div>
+</div>
+<p><br></p>
+
+<p>To determine how central a location it, I will calculate the straight line distance to a center point. For Singapore, I’ve selected the point having coordinate value <code class="language-plaintext highlighter-rouge">CITY_CENTER = (1.28019, 103.85175)</code>. This point was picked by eyeballing on google map.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">haversine</span><span class="p">(</span><span class="n">lon1</span><span class="p">,</span> <span class="n">lat1</span><span class="p">,</span> <span class="n">lon2</span><span class="p">,</span> <span class="n">lat2</span><span class="p">):</span>
+    <span class="s">"""
+    Calculate the great circle distance in kilometers between two points 
+    on the earth (specified in decimal degrees)
+    """</span>
+    <span class="c1"># convert decimal degrees to radians 
+</span>    <span class="n">lon1</span><span class="p">,</span> <span class="n">lat1</span><span class="p">,</span> <span class="n">lon2</span><span class="p">,</span> <span class="n">lat2</span> <span class="o">=</span> <span class="nf">map</span><span class="p">(</span><span class="n">radians</span><span class="p">,</span> <span class="p">[</span><span class="n">lon1</span><span class="p">,</span> <span class="n">lat1</span><span class="p">,</span> <span class="n">lon2</span><span class="p">,</span> <span class="n">lat2</span><span class="p">])</span>
+
+    <span class="c1"># haversine formula 
+</span>    <span class="n">dlon</span> <span class="o">=</span> <span class="n">lon2</span> <span class="o">-</span> <span class="n">lon1</span> 
+    <span class="n">dlat</span> <span class="o">=</span> <span class="n">lat2</span> <span class="o">-</span> <span class="n">lat1</span> 
+    <span class="n">a</span> <span class="o">=</span> <span class="nf">sin</span><span class="p">(</span><span class="n">dlat</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="nf">cos</span><span class="p">(</span><span class="n">lat1</span><span class="p">)</span> <span class="o">*</span> <span class="nf">cos</span><span class="p">(</span><span class="n">lat2</span><span class="p">)</span> <span class="o">*</span> <span class="nf">sin</span><span class="p">(</span><span class="n">dlon</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="nf">asin</span><span class="p">(</span><span class="nf">sqrt</span><span class="p">(</span><span class="n">a</span><span class="p">))</span> 
+    
+    <span class="c1"># constant used to convert to km
+</span>    <span class="n">r</span> <span class="o">=</span> <span class="mi">6371</span>
+    
+    <span class="k">return</span> <span class="n">c</span> <span class="o">*</span> <span class="n">r</span>
+
+
+<span class="n">df</span><span class="p">[</span><span class="s">'distance_from_center'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="nf">apply</span><span class="p">(</span>
+    <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nf">haversine</span><span class="p">(</span>
+        <span class="n">x</span><span class="p">[</span><span class="s">'longitude'</span><span class="p">],</span>
+        <span class="n">x</span><span class="p">[</span><span class="s">'latitude'</span><span class="p">],</span>
+        <span class="n">CITY_CENTER</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+        <span class="n">CITY_CENTER</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="distance-to-the-nearest-mrt-station">Distance to the nearest MRT station</h3>
+
+<p>Other than distance to city center, close priximity to amenities and public transportations could also make the flats more attractive and hence having higher price. I will now calculate distance from the nearest MRT station to each of the HDB block.</p>
+
+<p>To make calculations faster, I’ve (1) estimated the nearest location using Pythagorean theorem, and then (2) use the haversine formula above to determine actual distance in kilometers. This will save some calculation time.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># hdb_ll -&gt; np.ndarray
+</span>
+<span class="c1"># latitude is the x-axis
+# longitude is the y-axis
+</span><span class="n">hdb_ll</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s">'longitude'</span><span class="p">,</span> <span class="s">'latitude'</span><span class="p">]].</span><span class="n">values</span>
+
+<span class="c1"># find nearst mrt
+</span><span class="n">x_delta</span> <span class="o">=</span> <span class="p">(</span><span class="n">mrt_map</span><span class="p">.</span><span class="n">geometry</span><span class="p">.</span><span class="n">x</span><span class="p">.</span><span class="n">values</span><span class="p">.</span><span class="nf">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">hdb_ll</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="n">y_delta</span> <span class="o">=</span> <span class="p">(</span><span class="n">mrt_map</span><span class="p">.</span><span class="n">geometry</span><span class="p">.</span><span class="n">y</span><span class="p">.</span><span class="n">values</span><span class="p">.</span><span class="nf">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">hdb_ll</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="n">delta</span> <span class="o">=</span> <span class="p">((</span><span class="n">x_delta</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">y_delta</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="p">.</span><span class="mi">5</span>
+
+<span class="n">df</span><span class="p">[</span><span class="s">'nearest_mrt_id'</span><span class="p">]</span> <span class="o">=</span> <span class="n">delta</span><span class="p">.</span><span class="nf">argmin</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s">'nearest_mrt_location'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">'nearest_mrt_id'</span><span class="p">].</span><span class="nf">map</span><span class="p">(</span><span class="n">pd</span><span class="p">.</span><span class="nc">Series</span><span class="p">(</span><span class="n">mrt_map</span><span class="p">.</span><span class="n">geometry</span><span class="p">.</span><span class="n">values</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">mrt_map</span><span class="p">.</span><span class="n">index</span><span class="p">).</span><span class="nf">to_dict</span><span class="p">())</span>
+<span class="n">df</span><span class="p">[</span><span class="s">'nearest_mrt_longitude'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">'nearest_mrt_location'</span><span class="p">].</span><span class="nf">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">val</span><span class="p">:</span> <span class="n">val</span><span class="p">.</span><span class="n">x</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s">'nearest_mrt_latitude'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">'nearest_mrt_location'</span><span class="p">].</span><span class="nf">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">val</span><span class="p">:</span> <span class="n">val</span><span class="p">.</span><span class="n">y</span><span class="p">)</span>
+
+<span class="n">df</span><span class="p">[</span><span class="s">'distance_to_mrt'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="nf">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span>
+    <span class="nf">haversine</span><span class="p">(</span>
+        <span class="n">x</span><span class="p">[</span><span class="s">'longitude'</span><span class="p">],</span>
+        <span class="n">x</span><span class="p">[</span><span class="s">'latitude'</span><span class="p">],</span>
+        <span class="n">x</span><span class="p">[</span><span class="s">'nearest_mrt_longitude'</span><span class="p">],</span>
+        <span class="n">x</span><span class="p">[</span><span class="s">'nearest_mrt_latitude'</span><span class="p">]),</span>
+        <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="nf">drop</span><span class="p">([</span><span class="s">'nearest_mrt_longitude'</span><span class="p">,</span> <span class="s">'nearest_mrt_latitude'</span><span class="p">,</span> <span class="s">'nearest_mrt_id'</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s">'ignore'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="other-features">Other features</h3>
+
+<p>Here’s the remaining features to process:</p>
+<ul>
+  <li>Convert remaining lease duration from year-month format to months</li>
+  <li>Create a new feature called number of bedrooms from flat type (explained above)</li>
+  <li>Averaged storey number since the original dataset list a range instead of exact floor number</li>
+  <li>Drop values for rare types</li>
+  <li>Drop highly correlated features</li>
+  <li>Use boxlots to determine appropriate feature range. Optionally drop outliers.</li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># convert `remaining_lease_months` from years months to months
+</span><span class="n">df</span><span class="p">[</span><span class="s">'remaining_lease'</span><span class="p">].</span><span class="nb">str</span><span class="p">.</span><span class="nf">contains</span><span class="p">(</span><span class="s">'year'</span><span class="p">).</span><span class="nf">value_counts</span><span class="p">()</span>
+<span class="n">df</span><span class="p">[</span><span class="s">'remaining_lease_months'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">'remaining_lease'</span><span class="p">].</span><span class="nb">str</span><span class="p">[:</span><span class="mi">2</span><span class="p">].</span><span class="nf">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="o">*</span> <span class="mi">12</span> <span class="o">+</span> <span class="n">df</span><span class="p">[</span><span class="s">'remaining_lease'</span><span class="p">].</span><span class="nb">str</span><span class="p">[</span><span class="o">-</span><span class="mi">9</span><span class="p">:</span><span class="o">-</span><span class="mi">7</span><span class="p">].</span><span class="nf">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+
+<span class="c1"># convert flat type to number of rooms
+# https://www.hdb.gov.sg/residential/buying-a-flat/finding-a-flat/types-of-flats
+</span><span class="n">df</span><span class="p">[</span><span class="s">'num_bedrooms'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">'flat_type'</span><span class="p">].</span><span class="nf">map</span><span class="p">({</span>
+    <span class="s">'1 ROOM'</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="s">'2 ROOM'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s">'3 ROOM'</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="s">'4 ROOM'</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="s">'5 ROOM'</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="s">'EXECUTIVE'</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="s">'MULTI-GENERATION'</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+<span class="p">})</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="nf">drop</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s">'num_bedrooms'</span><span class="p">].</span><span class="nf">isnull</span><span class="p">()].</span><span class="n">index</span><span class="p">)</span>
+
+<span class="c1"># convert storey range to mean of range
+</span><span class="n">df</span><span class="p">[</span><span class="s">'storey_range_feature'</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">'storey_range'</span><span class="p">].</span><span class="nb">str</span><span class="p">[:</span><span class="mi">2</span><span class="p">].</span><span class="nf">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="o">+</span> <span class="n">df</span><span class="p">[</span><span class="s">'storey_range'</span><span class="p">].</span><span class="nb">str</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:].</span><span class="nf">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span> <span class="o">/</span> <span class="mi">2</span>
+
+<span class="c1"># drop highly correlated features
+</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="nf">drop</span><span class="p">([</span><span class="s">'lease_commence_date'</span><span class="p">,</span> <span class="s">'postal'</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s">'ignore'</span><span class="p">)</span>
+
+
+<span class="n">numerical_feature_cols</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s">'num_bedrooms'</span><span class="p">,</span>
+    <span class="s">'floor_area_sqm'</span><span class="p">,</span>
+    <span class="s">'storey_range_feature'</span><span class="p">,</span>
+    <span class="s">'remaining_lease_months'</span><span class="p">,</span>
+    <span class="s">'distance_to_mrt'</span><span class="p">,</span>
+    <span class="s">'distance_from_center'</span><span class="p">,</span>
+    <span class="s">'floor_area_sqm'</span><span class="p">,</span>
+    <span class="p">]</span>
+
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="p">.</span><span class="nf">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nf">len</span><span class="p">(</span><span class="n">numerical_feature_cols</span><span class="p">),</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">col_name</span> <span class="ow">in</span> <span class="nf">enumerate</span><span class="p">(</span><span class="n">numerical_feature_cols</span><span class="p">):</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+    <span class="n">sns</span><span class="p">.</span><span class="nf">boxplot</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">col_name</span><span class="p">],</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+    <span class="n">sns</span><span class="p">.</span><span class="nf">despine</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">.</span><span class="nf">set_title</span><span class="p">(</span><span class="n">col_name</span><span class="p">.</span><span class="nf">replace</span><span class="p">(</span><span class="s">'_'</span><span class="p">,</span> <span class="s">'</span><span class="se">\n</span><span class="s">'</span><span class="p">),</span> <span class="n">loc</span><span class="o">=</span><span class="s">'left'</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="p">.</span><span class="nf">tight_layout</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p><img src="/assets/images/posts/01-predict-hdb-resale_files/01-predict-hdb-resale_32_0.png" alt="png"></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># remove outliers
+</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s">'floor_area_sqm'</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">df</span><span class="p">[</span><span class="s">'floor_area_sqm'</span><span class="p">].</span><span class="nf">quantile</span><span class="p">(.</span><span class="mi">95</span><span class="p">)]</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="nf">dropna</span><span class="p">()</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="nf">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+
+<span class="c1"># correlation between numeric variables and target
+</span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="p">.</span><span class="nf">subplots</span><span class="p">()</span>
+<span class="n">df</span><span class="p">.</span><span class="nf">drop</span><span class="p">(</span><span class="s">'resale_price'</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> \
+    <span class="p">.</span><span class="nf">corrwith</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">'resale_price'</span><span class="p">],</span> <span class="n">numeric_only</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> \
+    <span class="p">.</span><span class="nf">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> \
+    <span class="p">.</span><span class="nf">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s">'barh'</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">.</span><span class="nf">axvline</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s">'k'</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">.</span><span class="nf">set_title</span><span class="p">(</span><span class="s">'Correlation with resale price'</span><span class="p">)</span>
+<span class="n">sns</span><span class="p">.</span><span class="nf">despine</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><img src="/assets/images/posts/01-predict-hdb-resale_files/01-predict-hdb-resale_34_0.png" alt="png"></p>
+
+<h2 id="3-split-train-test-data">3. Split train-test data</h2>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">numerical_feature_cols</span><span class="p">]</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">'resale_price'</span><span class="p">]</span>
+
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="nf">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="4-fit-models">4. Fit models</h2>
+
+<h4 id="41-linear-regresssion-baseline">4.1 Linear Regresssion (baseline)</h4>
+
+<p>I will first fit a simple estimator, which will be used as baseline.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">lr_model</span> <span class="o">=</span> <span class="nc">LinearRegression</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sa">f</span><span class="s">'fitting </span><span class="si">{</span><span class="n">lr_model</span><span class="p">.</span><span class="n">__class__</span><span class="p">.</span><span class="n">__name__</span><span class="si">}</span><span class="s">'</span><span class="p">)</span>
+<span class="n">lr_model</span><span class="p">.</span><span class="nf">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+<span class="n">preds</span> <span class="o">=</span> <span class="n">lr_model</span><span class="p">.</span><span class="nf">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+<span class="n">rmse</span> <span class="o">=</span> <span class="nf">mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">preds</span><span class="p">,</span> <span class="n">squared</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="nf">print</span><span class="p">(</span><span class="sa">f</span><span class="s">'</span><span class="si">{</span><span class="n">rmse</span><span class="o">=</span><span class="si">:</span><span class="p">,.</span><span class="mi">0</span><span class="n">f</span><span class="si">}</span><span class="s">'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>fitting LinearRegression
+rmse=78,280
+</code></pre></div></div>
+
+<h4 id="42-decision-trees-random-forest-gradientboosting-svr">4.2 Decision Trees, Random Forest, GradientBoosting, SVR</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">rf_model</span> <span class="o">=</span> <span class="nc">RandomForestRegressor</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="nf">print</span><span class="p">(</span><span class="sa">f</span><span class="s">'fitting </span><span class="si">{</span><span class="n">rf_model</span><span class="p">.</span><span class="n">__class__</span><span class="p">.</span><span class="n">__name__</span><span class="si">}</span><span class="s">'</span><span class="p">)</span>
+<span class="n">rf_model</span><span class="p">.</span><span class="nf">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+<span class="n">preds</span> <span class="o">=</span> <span class="n">rf_model</span><span class="p">.</span><span class="nf">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+<span class="n">rmse</span> <span class="o">=</span> <span class="nf">mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">preds</span><span class="p">,</span> <span class="n">squared</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="nf">print</span><span class="p">(</span><span class="sa">f</span><span class="s">'</span><span class="si">{</span><span class="n">rmse</span><span class="o">=</span><span class="si">:</span><span class="p">,.</span><span class="mi">0</span><span class="n">f</span><span class="si">}</span><span class="s">'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>fitting RandomForestRegressor
+rmse=33,531
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">gb_model</span> <span class="o">=</span> <span class="nc">GradientBoostingRegressor</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sa">f</span><span class="s">'fitting </span><span class="si">{</span><span class="n">gb_model</span><span class="p">.</span><span class="n">__class__</span><span class="p">.</span><span class="n">__name__</span><span class="si">}</span><span class="s">'</span><span class="p">)</span>
+<span class="n">gb_model</span><span class="p">.</span><span class="nf">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+<span class="n">preds</span> <span class="o">=</span> <span class="n">gb_model</span><span class="p">.</span><span class="nf">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+<span class="n">rmse</span> <span class="o">=</span> <span class="nf">mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">preds</span><span class="p">,</span> <span class="n">squared</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="nf">print</span><span class="p">(</span><span class="sa">f</span><span class="s">'</span><span class="si">{</span><span class="n">rmse</span><span class="o">=</span><span class="si">:</span><span class="p">,.</span><span class="mi">0</span><span class="n">f</span><span class="si">}</span><span class="s">'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>fitting GradientBoostingRegressor
+rmse=60,247
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">svr_model</span> <span class="o">=</span> <span class="nc">LinearSVR</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sa">f</span><span class="s">'fitting </span><span class="si">{</span><span class="n">svr_model</span><span class="p">.</span><span class="n">__class__</span><span class="p">.</span><span class="n">__name__</span><span class="si">}</span><span class="s">'</span><span class="p">)</span>
+<span class="n">svr_model</span><span class="p">.</span><span class="nf">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+<span class="n">preds</span> <span class="o">=</span> <span class="n">svr_model</span><span class="p">.</span><span class="nf">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+<span class="n">rmse</span> <span class="o">=</span> <span class="nf">mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">preds</span><span class="p">,</span> <span class="n">squared</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="nf">print</span><span class="p">(</span><span class="sa">f</span><span class="s">'</span><span class="si">{</span><span class="n">rmse</span><span class="o">=</span><span class="si">:</span><span class="p">,.</span><span class="mi">0</span><span class="n">f</span><span class="si">}</span><span class="s">'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>fitting LinearSVR
+rmse=81,687
+</code></pre></div></div>
+
+<h4 id="making-predictions-on-sample-data">Making predictions on sample data</h4>
+
+<p>To get more specific sense of each model’s performace, we can select random test data and check for each model’s predictions</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># select random indices
+</span><span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="nf">choice</span><span class="p">(</span><span class="n">X_test</span><span class="p">.</span><span class="n">index</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="n">sample_predictions</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="p">[</span><span class="n">lr_model</span><span class="p">,</span> <span class="n">rf_model</span><span class="p">,</span> <span class="n">gb_model</span><span class="p">,</span> <span class="n">svr_model</span><span class="p">]:</span>
+    <span class="n">sample_predictions</span><span class="p">[</span><span class="n">model</span><span class="p">.</span><span class="n">__class__</span><span class="p">.</span><span class="n">__name__</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span><span class="p">.</span><span class="nf">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+
+<span class="n">sample_predictions</span><span class="p">[</span><span class="s">'Ground Truth'</span><span class="p">]</span> <span class="o">=</span> <span class="n">y_test</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+<span class="n">sample_predictions</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="nc">DataFrame</span><span class="p">(</span><span class="n">sample_predictions</span><span class="p">)</span>
+
+<span class="n">pd</span><span class="p">.</span><span class="nc">DataFrame</span><span class="p">(</span><span class="n">sample_predictions</span><span class="p">).</span><span class="nf">plot</span><span class="p">(</span>
+    <span class="n">kind</span><span class="o">=</span><span class="s">'bar'</span><span class="p">,</span>
+    <span class="n">rot</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">xlabel</span><span class="o">=</span><span class="s">'flat id'</span><span class="p">,</span>
+    <span class="n">ylabel</span><span class="o">=</span><span class="s">'SGD'</span><span class="p">)</span> \
+    <span class="p">.</span><span class="nf">legend</span><span class="p">(</span>
+        <span class="n">loc</span><span class="o">=</span><span class="s">'center left'</span><span class="p">,</span>
+        <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">))</span>
+</code></pre></div></div>
+<p><img src="/assets/images/posts/01-predict-hdb-resale_files/01-predict-hdb-resale_47_1.png" alt="png"></p>
+
+<p>Out of the few models above, RandomForests perform the best. With a RMSE of 33.4k. In real terms, for a property that cost on average close to 500k, being off by 33k is decent.</p>
+
+<p>However, there are a lot more that we can do here:
+    1. Selecting different models
+    2. Optimizing hyperparameters, for example, using GridSearch or Hyperopt.</p>
+
+<p>Without mlflow, we will have to manually keep track of model parameteres, data sources, metrics, etc (such as in a google sheet). This is prone to errors and hard to keep track.</p>
+
+<h2 id="5-summary-so-far">5. Summary (so far)</h2>
+
+<p>I created basic HDB resale price prediction models with two additional features for centrality and proximity to MRT stations, on top of existing features such as living area, town name, and flat type.</p>
+
+<p>RandomForest outperforms single complex models due to its use of many relatively uncorrelated trees as a committee. Further improvement to predictions can be achieved by adding more relevant features, such as proximity to good schools, shopping malls, and other amenities.</p>
+
+<p>House prices could also be predicted using a Time Series model like ARIMA, among other potential approaches.</p>
+
+
+    </div>
+
+</article>
+<!--<div class="post-nav"><a class="previous" href="/jekyll-theme-yat/2023/02/23/predict-loan.html" title="Predicting loan defaults">Predicting loan defaults</a><span></span></div>-->
+    
+    <!-- back url at the bottom of the post-->
+  
+    <a href="https://dobeok.github.io/" title="" style="font-size:140%"><i class="fa fa-home"></i> Home</a>
+    <!--<div class="post-related">
+      <div>Related Articles</div>
+      <ul>
+        <li><a class="post-link" href="/jekyll-theme-yat/2023/01/31/vn-exam.html" title="">Analyzing Vietnam&#39;s high school graduation exam results</a></li><li><a class="post-link" href="/jekyll-theme-yat/2022/08/05/cohort-retention.html" title="">Cohort and Retention analysis</a></li><li><a class="post-link" href="/jekyll-theme-yat/2022/06/01/pokermon-guesser.html" title="">Creating a pokemon guesser</a></li><li><a class="post-link" href="/jekyll-theme-yat/2022/09/29/sim-queue.html" title="">Simulating a queue system</a></li></ul>
+    </div>--><!--<div class="post-comments"></div>-->
+
+  </section>
+</div>
+
+
+  </section>
+  <section class="sidebar" style="margin-left: 15px;">
+    <!-- Get sidebar items --><style type="text/css" media="screen">
+.post-menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+</style>
+
+<div class="post-menu">
+  <div class="post-menu-title">Contents</div>
+  <div class="post-menu-content"></div>
+</div>
+
+<script>
+  function generateContent() {
+    var menu = document.querySelector(".post-menu");
+    var menuContent =  menu.querySelector(".post-menu-content");
+    var headings = document.querySelector(".post-content").querySelectorAll("h2, h3, h4, h5, h6");
+
+    // Hide menu when no headings
+    if (headings.length === 0) {
+      return menu.style.display = "none";
+    }
+
+    // Generate post menu
+    var menuHTML = '';
+    for (var i = 0; i < headings.length; i++) {
+      var h = headings[i];
+      menuHTML += (
+        '<li class="h-' + h.tagName.toLowerCase() + '">'
+        + '<a href="#h-' + h.getAttribute('id') + '">' + h.textContent + '</a></li>');
+    }
+
+    menuContent.innerHTML = '<ul>' + menuHTML + '</ul>';
+
+    // The header element
+    var header = document.querySelector('header.site-header');
+
+    function doMenuCollapse(index, over_items) {
+      var items = menuContent.firstChild.children;
+
+      if (over_items == undefined) {
+        over_items = 20;
+      }
+
+      if (items.length < over_items) {
+        return;
+      }
+
+      var activeItem = items[index];
+      var beginItem = activeItem
+      var endItem = activeItem
+      var beginIndex = index;
+      var endIndex = index + 1;
+      while (beginIndex >= 0
+        && !items[beginIndex].classList.contains('h-h2')) {
+        beginIndex -= 1;
+      }
+      while (endIndex < items.length
+        && !items[endIndex].classList.contains('h-h2')) {
+        endIndex += 1;
+      }
+      for (var i = 0; i < beginIndex; i++) {
+        item = items[i]
+        if (!item.classList.contains('h-h2')) {
+          item.style.display = 'none';
+        }
+      }
+      for (var i = beginIndex + 1; i < endIndex; i++) {
+        item = items[i]
+        // if (!item.classList.contains('h-h2')) {
+          item.style.display = '';
+        // }
+      }
+      for (var i = endIndex; i < items.length; i++) {
+        item = items[i]
+        if (!item.classList.contains('h-h2')) {
+          item.style.display = 'none';
+        }
+      }
+    }
+
+    // Init menu collapsed
+    doMenuCollapse(-1);
+
+    // Active the menu item
+    window.addEventListener('scroll', function (event) {
+      var lastActive = menuContent.querySelector('.active');
+      var changed = true;
+      var activeIndex = -1;
+      for (var i = headings.length - 1; i >= 0; i--) {
+        var h = headings[i];
+        var headingRect = h.getBoundingClientRect();
+        var headerRect = header.getBoundingClientRect();
+        var headerTop = Math.floor(headerRect.top);
+        var headerHeight = Math.floor(headerRect.height);
+        var headerHeight = headerTop + headerHeight + 20;
+        if (headingRect.top <= headerHeight) {
+          var id = 'h-' + h.getAttribute('id');
+          var a = menuContent.querySelector('a[href="#' + id  + '"]');
+          var curActive = a.parentNode;
+          if (curActive) {
+            curActive.classList.add('active');
+            activeIndex = i;
+          }
+          if (lastActive == curActive) {
+            changed = false;
+          }
+          break;
+        }
+      }
+      if (changed) {
+        if (lastActive) {
+          lastActive.classList.remove('active');
+        }
+        doMenuCollapse(activeIndex);
+      }
+      event.preventDefault();
+    });
+  }
+  generateContent();
+</script>
+</section>
+</div>
+
+
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/jekyll-theme-yat/"></data>
+
+  <div class="wrapper">
+    <div class="site-footer-inner">
+<div>
+<span class="copyleft">©</span> 2020-2023 Vo Duy Do</div>
+      <div>
+<a href="https://github.com/dobeok" target="_blank">My Github </a> | <a href="/about">About Me</a>
+</div>
+      <!-- <div>Powered by <a title="Jekyll is a simple, blog-aware, static site
+      generator." href="https://jekyllrb.com/">Jekyll</a> &amp; <a title="Yat, yet
+      another theme." href="https://github.com/jeffreytse/jekyll-theme-yat">Yat Theme</a>.</div>
+      <div class="footer-col rss-subscribe">Subscribe <a href="/jekyll-theme-yat/feed.xml">via RSS</a></div> -->
+    </div>
+  </div>
+</footer>
+</body>
+</html>

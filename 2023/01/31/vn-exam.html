@@ -1,0 +1,1914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="google-translate-customization" content="108d9124921d80c3-80e20d618ff053c8-g4f02ec6f3dba68b7-c">
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Analyzing Vietnam’s high school graduation exam results | My data science projects</title>
+<meta name="generator" content="Jekyll v4.3.2">
+<meta property="og:title" content="Analyzing Vietnam’s high school graduation exam results">
+<meta name="author" content="Vo Duy Do">
+<meta property="og:locale" content="en_US">
+<meta name="description" content="Analyzing Vietnam High School graduation exam scores. Identifying trends, predicting missing scores and determining whether it’s fair to give bonus score based on geographical regions">
+<meta property="og:description" content="Analyzing Vietnam High School graduation exam scores. Identifying trends, predicting missing scores and determining whether it’s fair to give bonus score based on geographical regions">
+<link rel="canonical" href="https://dobeok.github.io//jekyll-theme-yat/2023/01/31/vn-exam.html">
+<meta property="og:url" content="https://dobeok.github.io//jekyll-theme-yat/2023/01/31/vn-exam.html">
+<meta property="og:site_name" content="My data science projects">
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2023-01-31T05:00:00+00:00">
+<meta name="twitter:card" content="summary">
+<meta property="twitter:title" content="Analyzing Vietnam’s high school graduation exam results">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Vo Duy Do"},"dateModified":"2023-01-31T05:00:00+00:00","datePublished":"2023-01-31T05:00:00+00:00","description":"Analyzing Vietnam High School graduation exam scores. Identifying trends, predicting missing scores and determining whether it’s fair to give bonus score based on geographical regions","headline":"Analyzing Vietnam’s high school graduation exam results","mainEntityOfPage":{"@type":"WebPage","@id":"https://dobeok.github.io//jekyll-theme-yat/2023/01/31/vn-exam.html"},"url":"https://dobeok.github.io//jekyll-theme-yat/2023/01/31/vn-exam.html"}</script>
+<!-- End Jekyll SEO tag -->
+<!-- <link rel="shortcut icon" href="https://dobeok.github.io//jekyll-theme-yat/favicon.ico" /> -->
+  <link rel="icon" href="/assets/images/icon.svg">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-noto-sans@0.0.72/index.min.css">
+  
+  
+  <link rel="stylesheet" href="/jekyll-theme-yat/assets/css/main.css">
+  <script src="/jekyll-theme-yat/assets/js/main.js"></script><link type="application/atom+xml" rel="alternate" href="https://dobeok.github.io//jekyll-theme-yat/feed.xml" title="My data science projects">
+<script>
+  function initGoogleAnalytics() {
+    var doNotTrack = (window.doNotTrack === "1" || navigator.doNotTrack === "1" ||
+      navigator.doNotTrack === "yes" || navigator.msDoNotTrack === "1");
+    var enableDNT = "true" == "true";
+
+    if (!enableDNT || !doNotTrack) {
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'G-13G9T0DNE2', 'auto');
+      ga('send', 'pageview');
+    }
+  }
+  window.addEventListener("load", initGoogleAnalytics);
+</script>
+
+<!-- <link rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/default.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js"></script> -->
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/base16/material.min.css">
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+
+
+
+
+<!-- and it's easy to individually load additional languages -->
+<script charset="UTF-8" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/languages/go.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+// Init highlight js
+document.addEventListener('DOMContentLoaded', function(event) {
+  var els = document.querySelectorAll('pre code')
+
+  function addLangData(block) {
+    var outer = block.parentElement.parentElement.parentElement;
+    var lang = block.getAttribute('data-lang');
+    for (var i = 0; i < outer.classList.length; i++) {
+      var cls = outer.classList[i];
+      if (cls.startsWith('language-')) {
+        lang = cls;
+        break;
+      }
+    }
+    if (!lang) {
+      cls = block.getAttribute('class');
+      lang = cls ? cls.replace('hljs ', '') : '';
+    }
+    if (lang.startsWith('language-')) {
+      lang = lang.substr(9);
+    }
+    block.setAttribute('class', 'hljs ' + lang);
+    block.parentNode.setAttribute('data-lang', lang);
+  }
+
+  function addBadge(block) {
+    var enabled = ('true' || 'true').toLowerCase();
+    if (enabled == 'true') {
+      var pre = block.parentElement;
+      pre.classList.add('badge');
+    }
+  }
+
+  function handle(block) {
+    addLangData(block);
+    addBadge(block)
+    hljs.highlightBlock(block);
+  }
+
+  for (var i = 0; i < els.length; i++) {
+    var el = els[i];
+    handle(el);
+  }
+});
+</script>
+
+<style>
+  /* code language badge */
+  pre.badge::before {
+    content: attr(data-lang);
+    /* color: #f0f0f0; */
+    color: #fff;
+    /* background-color: #ff4e00; */
+    background-color: #000000 ;
+    padding: 0 .5em;
+    border-radius: 0 2px;
+    text-transform: uppercase;
+    text-align: center;
+    min-width: 32px;
+    display: inline-block;
+    position: absolute;
+    right: 0;
+  }
+
+  /* fix wrong badge display for firefox browser */
+  code > table pre::before {
+    display: none;
+  }
+</style>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-13G9T0DNE2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-13G9T0DNE2');
+</script>
+</head>
+<body>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<header class="site-header " role="banner">
+
+  <div class="wrapper">
+    <div class="site-header-inner">
+<span class="site-brand"><a class="site-brand-inner" rel="author" href="/jekyll-theme-yat/">
+  <img class="site-favicon" title="My data science projects" src="/assets/images/icon.svg" onerror="this.style.display='none'">
+  My data science projects
+  <!-- left hand side favicon and title - optional - I removed to clean up -->
+</a>
+</span><nav class="site-nav">
+          <input type="checkbox" id="nav-trigger" class="nav-trigger">
+          <label for="nav-trigger">
+            <span class="menu-icon">
+              <svg viewbox="0 0 18 15" width="18px" height="15px">
+                <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"></path>
+              </svg>
+            </span>
+          </label>
+
+          <div class="trigger">
+<a class="page-link" href="/jekyll-theme-yat/">Home</a><a class="page-link" href="/jekyll-theme-yat/about.html">About Me</a><!--
+
+
+
+
+
+
+
+
+
+<span class="page-link">
+
+
+
+<div id="google_translate_element" style="display: none;">
+</div>
+
+<span class="ct-language">
+  <ul class="list-unstyled ct-language-dropdown">
+    
+      <li>
+        <a href="#" class="lang-select" data-lang="en">
+          
+          <img src="https://cdn.countryflags.com/thumbs/united-states-of-america/flag-400.png" title="English">
+          
+        </a>
+      </li>
+    
+      <li>
+        <a href="#" class="lang-select" data-lang="vi">
+          
+          <img src="https://cdn.countryflags.com/thumbs/vietnam/flag-400.png" title="Vietnamese">
+          
+        </a>
+      </li>
+    
+  </ul>
+</span>
+
+<script type="text/javascript">
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({
+    pageLanguage: 'en',
+    autoDisplay: false,
+    layout: google.translate.TranslateElement.InlineLayout.VERTICAL
+  }, 'google_translate_element');
+
+  // Links to cross-origin destinations are unsafe
+  var gll = document.getElementsByClassName('goog-logo-link')[0];
+  if (gll) {
+    gll.setAttribute('rel', 'noopener');
+  }
+
+  function restoreLang() {
+    var iframe = document.getElementsByClassName('goog-te-banner-frame')[0];
+    if (!iframe) return;
+
+    var innerDoc = iframe.contentDocument || iframe.contentWindow.document;
+    var restore_el = innerDoc.getElementsByTagName("button");
+
+    for (var i = 0; i < restore_el.length; i++) {
+      if (restore_el[i].id.indexOf("restore") >= 0) {
+        restore_el[i].click();
+        var close_el = innerDoc.getElementsByClassName("goog-close-link");
+        close_el[0].click();
+        return;
+      }
+    }
+  }
+
+  function triggerHtmlEvent(element, eventName) {
+    var event;
+    if (document.createEvent) {
+      event = document.createEvent('HTMLEvents');
+      event.initEvent(eventName, true, true);
+      element.dispatchEvent(event);
+    } else {
+      event = document.createEventObject();
+      event.eventType = eventName;
+      element.fireEvent('on' + event.eventType, event);
+    }
+  }
+
+  var googleCombo = document.querySelector("select.goog-te-combo");
+  var langSelect = document.querySelector('.ct-language');
+  langSelect.addEventListener('click', function(event) {
+    if (!event.target) {
+      return;
+    }
+
+    var selected = document.querySelector('.ct-language .ct-language-selected');
+    if (selected) {
+      selected.classList.remove('ct-language-selected');
+    }
+
+    var target = event.target;
+    while (target && target !== langSelect ) {
+      if (target.matches('.lang-select')) {
+        break;
+      }
+      target = target.parentElement;
+    }
+
+    if (target && target.matches('.lang-select')) {
+      var lang = target.getAttribute('data-lang');
+      if (googleCombo.value == lang) {
+        restoreLang();
+      } else {
+        target.parentElement.classList.add('ct-language-selected');
+        googleCombo.value = lang;
+        triggerHtmlEvent(googleCombo, 'change');
+      }
+    }
+
+    event.preventDefault();
+  });
+}
+</script>
+
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+</span> -->
+</div>
+        </nav>
+</div>
+  </div>
+</header>
+
+<script>
+  function initHeader() {
+    var lastScrollY = getScrollPos().y;
+    var documentElement = document.documentElement;
+
+    function storeScrollData() {
+      var y = getScrollPos().y;documentElement.setAttribute("data-header-transparent", "");var scrollStatus = "";
+
+      if (y <= 0) {
+        scrollStatus = "top";
+      } else if ((window.innerHeight + y) >= document.body.offsetHeight) {
+        scrollStatus = "bottom";
+      } else {
+        var isScrollDown = (y - lastScrollY > 0) ? true : false;
+        scrollStatus = isScrollDown ? "down" : "up";
+      }
+
+      lastScrollY = y;
+      documentElement.setAttribute("data-scroll-status", scrollStatus);
+    }
+
+    window.addEventListener('scroll', function(e) {
+      storeScrollData();
+    });
+
+    storeScrollData();
+  }
+  document.addEventListener('DOMContentLoaded', initHeader);
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+  function hashLocate(hashValue) {
+    hashValue = hashValue.replace(/^.*#h-/, '');
+    hashValue = decodeURIComponent(hashValue);
+    var element = document.getElementById(hashValue);
+
+    if (!element) {
+      return;
+    }
+
+    var header = document.querySelector('header.site-header');
+    var headerRect = header.getBoundingClientRect();
+    var headerTop = Math.floor(headerRect.top);
+    var headerHeight = Math.floor(headerRect.height);
+    var scrollPos = getScrollPos();
+    var offsetY = element.offsetTop - (headerTop + headerHeight + 20);
+
+    if (offsetY == scrollPos.y) {
+      return;
+    }
+
+    if (headerTop == 0  && offsetY > scrollPos.y) {
+      offsetY += headerHeight + 2;
+    } else if (headerTop < 0  && offsetY < scrollPos.y) {
+      offsetY -= headerHeight - 2;
+    }
+
+    smoothScrollTo(offsetY);
+  }
+
+  // The first event occurred
+  window.addEventListener('load', function(event) {
+    if (window.location.hash) {
+      hashLocate(window.location.hash);
+    }
+  });
+
+  // The first event occurred
+  window.addEventListener('click', function(event) {
+    if (event.target.tagName.toLowerCase() == 'a') {
+      hashLocate(event.target.getAttribute('href'));
+    }
+  });
+</script>
+<!--<div class="theme-toggle">
+  <input type="checkbox" id="theme-switch">
+  <label for="theme-switch">
+    <div class="toggle"></div>
+    <div class="names">
+      <p class="light">Light</p>
+      <p class="dark">Dark</p>
+    </div>
+  </label>
+</div>
+
+
+
+
+<script>
+  (function() {
+    var sw = document.getElementById('theme-switch');
+    var html = document.getElementsByTagName('html')[0];
+    var nightModeOption = ('off' || 'auto').toLowerCase();
+    var storage = nightModeOption === 'manual'
+        ? localStorage
+        : sessionStorage;
+    var themeData = loadThemeData();
+
+    function saveThemeData(data) {
+      storage.setItem('theme', JSON.stringify(data));
+    }
+
+    function loadThemeData() {
+      var data = storage.getItem('theme');
+      try {
+        data = JSON.parse(data ? data : '');
+      } catch(e) {
+        data = { nightShift: undefined, autoToggleAt: 0 };
+        saveThemeData(data);
+      }
+      return data;
+    }
+
+    function handleThemeToggle(nightShift) {
+      themeData.nightShift = nightShift;
+      saveThemeData(themeData);
+      html.dataset.theme = nightShift ? 'dark' : 'light';
+      setTimeout(function() {
+        sw.checked = nightShift ? true : false;
+      }, 50);
+    }
+
+    function autoThemeToggle() {
+      // Next time point of theme toggle
+      var now = new Date();
+      var toggleAt = new Date();
+      var hours = now.getHours();
+      var nightShift = hours >= 19 || hours <=7;
+
+      if (nightShift) {
+        if (hours > 7) {
+          toggleAt.setDate(toggleAt.getDate() + 1);
+        }
+        toggleAt.setHours(7);
+      } else {
+        toggleAt.setHours(19);
+      }
+
+      toggleAt.setMinutes(0);
+      toggleAt.setSeconds(0);
+      toggleAt.setMilliseconds(0)
+
+      var delay = toggleAt.getTime() - now.getTime();
+
+      // auto toggle theme mode
+      setTimeout(function() {
+        handleThemeToggle(!nightShift);
+      }, delay);
+
+      return {
+        nightShift: nightShift,
+        toggleAt: toggleAt.getTime()
+      };
+    }
+
+    // Listen the theme toggle event
+    sw.addEventListener('change', function(event) {
+      handleThemeToggle(event.target.checked);
+    });
+
+    if (nightModeOption == 'auto') {
+      var data = autoThemeToggle();
+
+      // Toggle theme by local setting
+      if (data.toggleAt > themeData.autoToggleAt) {
+        themeData.autoToggleAt = data.toggleAt;
+        handleThemeToggle(data.nightShift);
+      } else {
+        handleThemeToggle(themeData.nightShift);
+      }
+    } else if (nightModeOption == 'manual') {
+      handleThemeToggle(themeData.nightShift);
+    } else {
+      var nightShift = themeData.nightShift;
+      if (nightShift === undefined) {
+        nightShift = nightModeOption === 'on';
+      }
+      handleThemeToggle(nightShift);
+    }
+  })();
+</script>
+--><div id="click-to-top" class="click-to-top">
+  <i class="fa fa-arrow-up"></i>
+</div>
+<script>
+  (function () {
+    const clickToTop = document.getElementById('click-to-top');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 100) {
+        clickToTop.classList.add('show')
+      }else {
+        clickToTop.classList.remove('show')
+      }
+    });
+    clickToTop.addEventListener('click', () => {
+      window.smoothScrollTo(0);
+    });
+  })();
+</script>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <div class="framework">
+  <section class="main">
+
+     <br>
+<div class="post">
+  <section>
+    
+    <!-- custom title in each post  -->
+    <p style="color:black;font-weight:bold;font-size:180%;">Analyzing Vietnam's high school graduation exam results</p>
+    <hr>
+
+
+
+
+
+
+
+
+
+<article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+    <div class="post-content e-content" itemprop="articleBody">
+
+      <h2 id="0-introduction">0. Introduction</h2>
+
+<ul>
+  <li>
+    <p>The Vietnamese high school graduation exam, also known as the National High School Exam, is a standardized test taken by high school students in Vietnam. It is used to determine whether students have achieved a sufficient level of knowledge and skills in order to graduate from high school and is considered a crucial factor in their future academic and career prospects. The test covers subjects such as mathematics, literature, physics, chemistry, biology, history, and geography.</p>
+  </li>
+  <li>
+    <p>The scores are public, and is semi-anonymised. From this dataset, I will:</p>
+    <ol>
+      <li>Identify general trends across the subjects</li>
+      <li>Predict missing scores</li>
+      <li>Answer whether it’s fair to give bonus scores to students in less developed areas</li>
+    </ol>
+  </li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="n">pandas</span> <span class="k">as</span> <span class="n">pd</span>
+<span class="kn">import</span> <span class="n">numpy</span> <span class="k">as</span> <span class="n">np</span>
+
+<span class="kn">import</span> <span class="n">matplotlib.pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">import</span> <span class="n">seaborn</span> <span class="k">as</span> <span class="n">sns</span>
+
+<span class="kn">from</span> <span class="n">scipy</span> <span class="kn">import</span> <span class="n">stats</span>
+
+<span class="kn">import</span> <span class="n">xgboost</span> <span class="k">as</span> <span class="n">xg</span>
+<span class="kn">from</span> <span class="n">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span> <span class="n">sklearn.metrics</span> <span class="kn">import</span> <span class="n">mean_squared_error</span> <span class="k">as</span> <span class="n">MSE</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pd</span><span class="p">.</span><span class="nf">set_option</span><span class="p">(</span><span class="s">'display.max_rows'</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="n">sns</span><span class="p">.</span><span class="nf">set_theme</span><span class="p">(</span><span class="n">style</span><span class="o">=</span><span class="s">'white'</span><span class="p">)</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="nf">read_csv</span><span class="p">(</span><span class="s">'data/processed/yr2019.csv'</span><span class="p">)</span> <span class="c1"># main score dataset
+</span><span class="n">gdp</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="nf">read_csv</span><span class="p">(</span><span class="s">'data/processed/grdp_per_cap.csv'</span><span class="p">)</span> <span class="c1"># to find correlation between income level and academic performance
+</span>
+<span class="n">df</span><span class="p">.</span><span class="nf">head</span><span class="p">()</span>
+</code></pre></div></div>
+
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>
+</th>
+      <th>candidate_ID</th>
+      <th>literature</th>
+      <th>mathematics</th>
+      <th>fl_code</th>
+      <th>foreign_language</th>
+      <th>physics</th>
+      <th>chemistry</th>
+      <th>biology</th>
+      <th>history</th>
+      <th>geography</th>
+      <th>civics_study</th>
+      <th>province</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1000029</td>
+      <td>5.00</td>
+      <td>7.2</td>
+      <td>N1</td>
+      <td>6.8</td>
+      <td>6.0</td>
+      <td>4.5</td>
+      <td>4.00</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Ha Noi</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1000030</td>
+      <td>6.25</td>
+      <td>6.2</td>
+      <td>N1</td>
+      <td>8.0</td>
+      <td>5.0</td>
+      <td>4.5</td>
+      <td>3.75</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Ha Noi</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1000031</td>
+      <td>5.75</td>
+      <td>6.8</td>
+      <td>N1</td>
+      <td>7.2</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>4.25</td>
+      <td>5.5</td>
+      <td>7.0</td>
+      <td>Ha Noi</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1000032</td>
+      <td>4.50</td>
+      <td>5.8</td>
+      <td>N1</td>
+      <td>9.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>7.00</td>
+      <td>6.5</td>
+      <td>7.0</td>
+      <td>Ha Noi</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1000033</td>
+      <td>5.50</td>
+      <td>7.0</td>
+      <td>N1</td>
+      <td>3.6</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>5.25</td>
+      <td>7.5</td>
+      <td>8.5</td>
+      <td>Ha Noi</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">subjects</span> <span class="o">=</span> <span class="p">[</span>
+ <span class="s">'literature'</span><span class="p">,</span>
+ <span class="s">'mathematics'</span><span class="p">,</span>
+ <span class="s">'foreign_language'</span><span class="p">,</span>
+ 
+ <span class="s">'physics'</span><span class="p">,</span>
+ <span class="s">'chemistry'</span><span class="p">,</span>
+ <span class="s">'biology'</span><span class="p">,</span>
+ 
+ <span class="s">'history'</span><span class="p">,</span>
+ <span class="s">'geography'</span><span class="p">,</span>
+ <span class="s">'civics_study'</span><span class="p">,]</span>
+</code></pre></div></div>
+
+<h2 id="1-overview-of-subjects-and-scores">1. Overview of subjects and scores</h2>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df_long</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="nf">melt</span><span class="p">(</span>
+    <span class="n">df</span><span class="p">,</span>
+    <span class="n">id_vars</span><span class="o">=</span><span class="p">[</span><span class="s">'candidate_ID'</span><span class="p">,</span> <span class="s">'province'</span><span class="p">],</span>
+    <span class="n">value_vars</span><span class="o">=</span><span class="n">subjects</span><span class="p">,</span>
+    <span class="n">var_name</span><span class="o">=</span><span class="s">'subject'</span><span class="p">,</span>
+    <span class="n">value_name</span><span class="o">=</span><span class="s">'score'</span>
+<span class="p">).</span><span class="nf">dropna</span><span class="p">()</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df_long</span><span class="p">.</span><span class="nf">head</span><span class="p">()</span>
+</code></pre></div></div>
+
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>
+</th>
+      <th>candidate_ID</th>
+      <th>province</th>
+      <th>subject</th>
+      <th>score</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1000029</td>
+      <td>Ha Noi</td>
+      <td>literature</td>
+      <td>5.00</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1000030</td>
+      <td>Ha Noi</td>
+      <td>literature</td>
+      <td>6.25</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1000031</td>
+      <td>Ha Noi</td>
+      <td>literature</td>
+      <td>5.75</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1000032</td>
+      <td>Ha Noi</td>
+      <td>literature</td>
+      <td>4.50</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1000033</td>
+      <td>Ha Noi</td>
+      <td>literature</td>
+      <td>5.50</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">fig1</span><span class="p">,</span> <span class="n">axes1</span> <span class="o">=</span> <span class="n">plt</span><span class="p">.</span><span class="nf">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">sharey</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="c1"># count of students
+</span><span class="n">subject_count</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">subjects</span><span class="p">].</span><span class="nf">notnull</span><span class="p">().</span><span class="nf">sum</span><span class="p">()</span>
+
+<span class="n">sns</span><span class="p">.</span><span class="nf">barplot</span><span class="p">(</span>
+   <span class="n">x</span><span class="o">=</span><span class="n">subject_count</span><span class="p">.</span><span class="n">values</span><span class="p">,</span>
+   <span class="n">y</span><span class="o">=</span><span class="n">subject_count</span><span class="p">.</span><span class="n">index</span><span class="p">,</span>
+   <span class="n">palette</span><span class="o">=</span><span class="s">"vlag"</span><span class="p">,</span>
+   <span class="n">ax</span><span class="o">=</span><span class="n">axes1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+<span class="p">)</span>
+
+<span class="c1"># distribution of scores per subject
+</span><span class="n">sns</span><span class="p">.</span><span class="nf">boxplot</span><span class="p">(</span>
+    <span class="n">x</span><span class="o">=</span><span class="n">df_long</span><span class="p">[</span><span class="s">'score'</span><span class="p">],</span>
+    <span class="n">y</span><span class="o">=</span><span class="n">df_long</span><span class="p">[</span><span class="s">'subject'</span><span class="p">],</span>
+    <span class="n">showfliers</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+    <span class="n">palette</span><span class="o">=</span><span class="s">"vlag"</span><span class="p">,</span>
+    <span class="n">ax</span><span class="o">=</span><span class="n">axes1</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+    <span class="n">showmeans</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">meanprops</span><span class="o">=</span><span class="p">{</span><span class="s">"marker"</span><span class="p">:</span><span class="s">"o"</span><span class="p">,</span>
+                       <span class="s">"markerfacecolor"</span><span class="p">:</span><span class="s">"white"</span><span class="p">,</span> 
+                       <span class="s">"markeredgecolor"</span><span class="p">:</span><span class="s">"black"</span><span class="p">,</span>
+                      <span class="s">"markersize"</span><span class="p">:</span><span class="s">"8"</span><span class="p">})</span>
+                      
+<span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axes1</span><span class="p">:</span>
+    <span class="n">sns</span><span class="p">.</span><span class="nf">despine</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="nf">len</span><span class="p">(</span><span class="n">subjects</span><span class="p">)):</span>
+        <span class="n">ax</span><span class="p">.</span><span class="nf">axhline</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="n">val</span> <span class="o">+</span> <span class="p">.</span><span class="mi">5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">'grey'</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s">'--'</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="p">.</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="n">axes1</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nf">set_title</span><span class="p">(</span><span class="s">'Number of students signing up for each subject'</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s">'left'</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s">"bold"</span><span class="p">)</span>
+<span class="n">axes1</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nf">set_xlabel</span><span class="p">(</span><span class="s">'Number of students'</span><span class="p">)</span>
+<span class="n">axes1</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nf">set_title</span><span class="p">(</span><span class="s">'Distribution of scores obtained</span><span class="se">\n</span><span class="s">Circles show averages'</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s">'left'</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s">"bold"</span><span class="p">)</span>
+<span class="n">axes1</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nf">set_ylabel</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+<span class="n">axes1</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nf">set_xlabel</span><span class="p">(</span><span class="s">'Score out of 10'</span><span class="p">)</span>
+
+<span class="n">fig1</span><span class="p">.</span><span class="nf">tight_layout</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p><img src="/assets/images/posts/vn-highschool-exam/2_analyze_7_0.png" alt="png"></p>
+
+<p>Subject choices:</p>
+
+<ul>
+  <li>The compulsory subjects are Maths and Literature, and for most students, a Foreign Language. Among these subjects, students struggle the most with Foreign Language where the median student scored less than half of total points.</li>
+  <li>The Natural Science subjects (Physics, Chemistry, Biology) are less popular than Social Sciences (History, Geography, Civics Study)</li>
+</ul>
+
+<p>Scores:</p>
+<ul>
+  <li>Maths scores spread out the most. This does a good job of ranking students. Furthermore, Maths’ means and median are very close. Nice!</li>
+  <li>Civics study has the highest average score. On one hand, it’s hard to ask difficult questions on this subject as it mostly concern with how one can be a ‘good’ citizen. On the other hand, it might not be a good subject to evaluate students. I would recommend a simple Pass/Fail score for this subject.</li>
+</ul>
+
+<h2 id="2-finding-correlation-between-subjects-and-predicting-missing-scores">2. Finding correlation between subjects and Predicting missing scores</h2>
+
+<ul>
+  <li>Generally, we can assume that a student who do well in a subject (such as Maths) might likely also do well in other (eg. Physics or Chemistry). As the skills required (logical thinking, being hardworking) are similar.</li>
+  <li>
+    <p>We can use this knowledge  to make predictions. For example: predict Maths scores based on other subjects.</p>
+  </li>
+  <li>Beyond simple predictions, we can find more subtle patterns. In extreme cases, we might even identify cheating students if their scores deviate too much from expected. However, this is a serious topic that require additional data (eg. students’ and their schools’ performance across time, etc) so we will not try to do so here based solely on a snapshot of limited data.</li>
+</ul>
+
+<h3 id="correlation-matrix">Correlation matrix</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">scores</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">subjects</span><span class="p">]</span>
+<span class="n">scores</span><span class="p">.</span><span class="nf">head</span><span class="p">()</span>
+</code></pre></div></div>
+
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>
+</th>
+      <th>literature</th>
+      <th>mathematics</th>
+      <th>foreign_language</th>
+      <th>physics</th>
+      <th>chemistry</th>
+      <th>biology</th>
+      <th>history</th>
+      <th>geography</th>
+      <th>civics_study</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>5.00</td>
+      <td>7.2</td>
+      <td>6.8</td>
+      <td>6.0</td>
+      <td>4.5</td>
+      <td>4.00</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>6.25</td>
+      <td>6.2</td>
+      <td>8.0</td>
+      <td>5.0</td>
+      <td>4.5</td>
+      <td>3.75</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>5.75</td>
+      <td>6.8</td>
+      <td>7.2</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>4.25</td>
+      <td>5.5</td>
+      <td>7.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4.50</td>
+      <td>5.8</td>
+      <td>9.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>7.00</td>
+      <td>6.5</td>
+      <td>7.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5.50</td>
+      <td>7.0</td>
+      <td>3.6</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>5.25</td>
+      <td>7.5</td>
+      <td>8.5</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">corr_matrix</span> <span class="o">=</span> <span class="n">scores</span><span class="p">.</span><span class="nf">corr</span><span class="p">()</span>
+<span class="n">corr_matrix</span><span class="p">.</span><span class="nf">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>
+</th>
+      <th>literature</th>
+      <th>mathematics</th>
+      <th>foreign_language</th>
+      <th>physics</th>
+      <th>chemistry</th>
+      <th>biology</th>
+      <th>history</th>
+      <th>geography</th>
+      <th>civics_study</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>literature</th>
+      <td>1.00</td>
+      <td>0.48</td>
+      <td>0.41</td>
+      <td>0.24</td>
+      <td>0.25</td>
+      <td>0.27</td>
+      <td>0.45</td>
+      <td>0.49</td>
+      <td>0.46</td>
+    </tr>
+    <tr>
+      <th>mathematics</th>
+      <td>0.48</td>
+      <td>1.00</td>
+      <td>0.57</td>
+      <td>0.67</td>
+      <td>0.62</td>
+      <td>0.38</td>
+      <td>0.41</td>
+      <td>0.48</td>
+      <td>0.44</td>
+    </tr>
+    <tr>
+      <th>foreign_language</th>
+      <td>0.41</td>
+      <td>0.57</td>
+      <td>1.00</td>
+      <td>0.39</td>
+      <td>0.19</td>
+      <td>0.25</td>
+      <td>0.33</td>
+      <td>0.34</td>
+      <td>0.32</td>
+    </tr>
+    <tr>
+      <th>physics</th>
+      <td>0.24</td>
+      <td>0.67</td>
+      <td>0.39</td>
+      <td>1.00</td>
+      <td>0.52</td>
+      <td>0.20</td>
+      <td>0.18</td>
+      <td>0.22</td>
+      <td>0.12</td>
+    </tr>
+    <tr>
+      <th>chemistry</th>
+      <td>0.25</td>
+      <td>0.62</td>
+      <td>0.19</td>
+      <td>0.52</td>
+      <td>1.00</td>
+      <td>0.45</td>
+      <td>0.17</td>
+      <td>0.19</td>
+      <td>0.10</td>
+    </tr>
+    <tr>
+      <th>biology</th>
+      <td>0.27</td>
+      <td>0.38</td>
+      <td>0.25</td>
+      <td>0.20</td>
+      <td>0.45</td>
+      <td>1.00</td>
+      <td>0.26</td>
+      <td>0.30</td>
+      <td>0.23</td>
+    </tr>
+    <tr>
+      <th>history</th>
+      <td>0.45</td>
+      <td>0.41</td>
+      <td>0.33</td>
+      <td>0.18</td>
+      <td>0.17</td>
+      <td>0.26</td>
+      <td>1.00</td>
+      <td>0.60</td>
+      <td>0.50</td>
+    </tr>
+    <tr>
+      <th>geography</th>
+      <td>0.49</td>
+      <td>0.48</td>
+      <td>0.34</td>
+      <td>0.22</td>
+      <td>0.19</td>
+      <td>0.30</td>
+      <td>0.60</td>
+      <td>1.00</td>
+      <td>0.58</td>
+    </tr>
+    <tr>
+      <th>civics_study</th>
+      <td>0.46</td>
+      <td>0.44</td>
+      <td>0.32</td>
+      <td>0.12</td>
+      <td>0.10</td>
+      <td>0.23</td>
+      <td>0.50</td>
+      <td>0.58</td>
+      <td>1.00</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># remove the top triangle of the matrix to simplify the heatmap
+</span><span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="nf">zeros_like</span><span class="p">(</span><span class="n">corr_matrix</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+<span class="n">mask</span><span class="p">[</span><span class="n">np</span><span class="p">.</span><span class="nf">triu_indices_from</span><span class="p">(</span><span class="n">mask</span><span class="p">)]</span> <span class="o">=</span> <span class="bp">True</span>
+
+<span class="c1"># plot
+</span><span class="n">fig2</span><span class="p">,</span> <span class="n">axes2</span> <span class="o">=</span> <span class="n">plt</span><span class="p">.</span><span class="nf">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+
+<span class="n">sns</span><span class="p">.</span><span class="nf">heatmap</span><span class="p">(</span>
+    <span class="n">corr_matrix</span><span class="p">,</span>
+    <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span>
+    <span class="n">annot</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">linewidth</span><span class="o">=</span><span class="p">.</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">cmap</span> <span class="o">=</span> <span class="n">sns</span><span class="p">.</span><span class="nf">color_palette</span><span class="p">(</span><span class="s">"vlag_r"</span><span class="p">,</span> <span class="n">as_cmap</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+    <span class="n">ax</span><span class="o">=</span><span class="n">axes2</span>
+    <span class="p">)</span>
+
+<span class="n">axes2</span><span class="p">.</span><span class="nf">set_title</span><span class="p">(</span><span class="s">'Score correlation between subjects:</span><span class="se">\n</span><span class="s">High correlations among Maths-Physics-Chemistry scores'</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s">'left'</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s">"bold"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Text(0.0, 1.0, 'Score correlation between subjects:\nHigh correlations among Maths-Physics-Chemistry scores')
+</code></pre></div></div>
+
+<p><img src="/assets/images/posts/vn-highschool-exam/2_analyze_13_1.png" alt="png"></p>
+
+<h3 id="predicting-math-score-based-on-other-subjects">Predicting Math score based on other subjects</h3>
+
+<p>We will use xgboost regression as it works well with tabular data</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">scores_nonnull</span> <span class="o">=</span> <span class="n">scores</span><span class="p">.</span><span class="nf">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="s">'mathematics'</span><span class="p">)</span>
+
+<span class="n">X</span> <span class="o">=</span> <span class="n">scores_nonnull</span><span class="p">.</span><span class="nf">drop</span><span class="p">(</span><span class="s">'mathematics'</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">scores_nonnull</span><span class="p">[</span><span class="s">'mathematics'</span><span class="p">]</span>
+
+
+<span class="c1"># Splitting
+</span><span class="n">train_X</span><span class="p">,</span> <span class="n">test_X</span><span class="p">,</span> <span class="n">train_y</span><span class="p">,</span> <span class="n">test_y</span> <span class="o">=</span> <span class="nf">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="mi">123</span><span class="p">)</span>
+  
+
+<span class="c1"># Instantiation
+</span><span class="n">xgb_r</span> <span class="o">=</span> <span class="n">xg</span><span class="p">.</span><span class="nc">XGBRegressor</span><span class="p">(</span><span class="n">objective</span> <span class="o">=</span><span class="s">'reg:squarederror'</span><span class="p">,</span> <span class="n">n_estimators</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">seed</span> <span class="o">=</span> <span class="mi">123</span><span class="p">)</span>
+  
+
+<span class="c1"># Fitting the model
+</span><span class="n">xgb_r</span><span class="p">.</span><span class="nf">fit</span><span class="p">(</span><span class="n">train_X</span><span class="p">,</span> <span class="n">train_y</span><span class="p">)</span>
+
+ 
+<span class="c1"># Predict the model
+</span><span class="n">pred</span> <span class="o">=</span> <span class="n">xgb_r</span><span class="p">.</span><span class="nf">predict</span><span class="p">(</span><span class="n">test_X</span><span class="p">)</span>
+
+<span class="c1"># RMSE Computation
+</span><span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="nf">sqrt</span><span class="p">(</span><span class="nc">MSE</span><span class="p">(</span><span class="n">test_y</span><span class="p">,</span> <span class="n">pred</span><span class="p">))</span>
+<span class="nf">print</span><span class="p">(</span><span class="sa">f</span><span class="s">'RMSE : </span><span class="si">{</span><span class="n">rmse</span><span class="si">:</span><span class="p">.</span><span class="mi">3</span><span class="n">f</span><span class="si">}</span><span class="s">'</span><span class="p">)</span>
+
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>RMSE : 0.998
+</code></pre></div></div>
+
+<p>Using the fitted model, we can predict Math scores for those who didn’t take the test.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># predicting scores of students who dropped maths
+</span><span class="n">missed_maths</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s">'mathematics'</span><span class="p">].</span><span class="nf">isnull</span><span class="p">()][</span><span class="n">subjects</span><span class="p">].</span><span class="nf">drop</span><span class="p">([</span><span class="s">'mathematics'</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">missed_maths_pred</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="nc">DataFrame</span><span class="p">({</span><span class="s">'predicted'</span><span class="p">:</span> <span class="n">xgb_r</span><span class="p">.</span><span class="nf">predict</span><span class="p">(</span><span class="n">missed_maths</span><span class="p">)})</span>
+
+<span class="n">missed_maths_pred</span><span class="p">.</span><span class="nf">head</span><span class="p">()</span>
+</code></pre></div></div>
+
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>
+</th>
+      <th>predicted</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>6.494553</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>5.275107</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3.323812</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>5.175710</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>2.715799</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">actual_mean</span> <span class="o">=</span> <span class="n">scores_nonnull</span><span class="p">[</span><span class="s">'mathematics'</span><span class="p">].</span><span class="nf">mean</span><span class="p">()</span>
+<span class="n">dropped_mean</span> <span class="o">=</span> <span class="n">missed_maths_pred</span><span class="p">[</span><span class="s">'predicted'</span><span class="p">].</span><span class="nf">mean</span><span class="p">()</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">fig3</span><span class="p">,</span> <span class="n">axes3</span> <span class="o">=</span> <span class="n">plt</span><span class="p">.</span><span class="nf">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+
+<span class="n">sns</span><span class="p">.</span><span class="nf">kdeplot</span><span class="p">(</span>
+   <span class="n">data</span><span class="o">=</span><span class="n">missed_maths_pred</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s">"predicted"</span><span class="p">,</span>
+   <span class="n">fill</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+   <span class="n">alpha</span><span class="o">=</span><span class="p">.</span><span class="mi">5</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+   <span class="n">label</span><span class="o">=</span><span class="s">'predicted scores for</span><span class="se">\n</span><span class="s">students who dropped maths'</span><span class="p">,</span>
+   <span class="n">ax</span><span class="o">=</span><span class="n">axes3</span>
+<span class="p">)</span>
+
+<span class="n">sns</span><span class="p">.</span><span class="nf">kdeplot</span><span class="p">(</span>
+   <span class="n">x</span><span class="o">=</span><span class="n">scores_nonnull</span><span class="p">[</span><span class="s">'mathematics'</span><span class="p">],</span>
+   <span class="n">fill</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+   <span class="n">alpha</span><span class="o">=</span><span class="p">.</span><span class="mi">5</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+   <span class="n">label</span><span class="o">=</span><span class="s">'actual scores'</span><span class="p">,</span>
+   <span class="n">ax</span><span class="o">=</span><span class="n">axes3</span>
+<span class="p">)</span>
+
+<span class="n">sns</span><span class="p">.</span><span class="nf">despine</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axes3</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">axes3</span><span class="p">.</span><span class="nf">set_title</span><span class="p">(</span><span class="s">'Students who dropped Maths are predicted to score lower</span><span class="se">\n</span><span class="s"> than those who took the test. Most notably some having scores &lt;=1'</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s">'left'</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s">"bold"</span><span class="p">)</span>
+<span class="n">axes3</span><span class="p">.</span><span class="nf">set_xlabel</span><span class="p">(</span><span class="s">'Score'</span><span class="p">)</span>
+
+<span class="n">axes3</span><span class="p">.</span><span class="nf">axvline</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">dropped_mean</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s">'--'</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">sns</span><span class="p">.</span><span class="nf">color_palette</span><span class="p">().</span><span class="nf">as_hex</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">axes3</span><span class="p">.</span><span class="nf">text</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">dropped_mean</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s">'right'</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="sa">f</span><span class="s">'dropped out avg: </span><span class="si">{</span><span class="n">dropped_mean</span><span class="si">:</span><span class="p">.</span><span class="mi">2</span><span class="n">f</span><span class="si">}</span><span class="s"> '</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">sns</span><span class="p">.</span><span class="nf">color_palette</span><span class="p">().</span><span class="nf">as_hex</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">axes3</span><span class="p">.</span><span class="nf">axvline</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">actual_mean</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s">'--'</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">sns</span><span class="p">.</span><span class="nf">color_palette</span><span class="p">().</span><span class="nf">as_hex</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">axes3</span><span class="p">.</span><span class="nf">text</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">actual_mean</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s">'left'</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="sa">f</span><span class="s">' actual avg: </span><span class="si">{</span><span class="n">actual_mean</span><span class="si">:</span><span class="p">.</span><span class="mi">2</span><span class="n">f</span><span class="si">}</span><span class="s"> '</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">sns</span><span class="p">.</span><span class="nf">color_palette</span><span class="p">().</span><span class="nf">as_hex</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">axes3</span><span class="p">.</span><span class="nf">set_ylim</span><span class="p">(</span><span class="n">top</span><span class="o">=</span><span class="p">.</span><span class="mi">45</span><span class="p">)</span>
+
+<span class="n">axes3</span><span class="p">.</span><span class="nf">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s">'center left'</span><span class="p">,</span> <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">))</span>
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;matplotlib.legend.Legend at 0x17fb30ee0&gt;
+</code></pre></div></div>
+
+<p><img src="/assets/images/posts/vn-highschool-exam/2_analyze_20_1.png" alt="png"></p>
+
+<h2 id="3-is-it-fair-to-give-bonus-points-for-less-developed-regions">3. Is it fair to give bonus points for less developed regions?</h2>
+
+<ul>
+  <li>Students from less developed regions are given bonus scores. Reason is that they can devote less time to study compare to their peers in wealthier regions. A bonus score gives them with better opportunity for a good univerity education and improve their prospects.</li>
+  <li>This practice is only fair if students from poorer areas indeed perform worse.</li>
+  <li>We can validate this by comparing score distributions between 2 regions (similar to an A/B test). In this example I compare between Ha Noi (~5,000 USD per cap) and Nghe An (~1,500 USD per cap)</li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># avg score per province
+</span><span class="n">prov</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="nf">pivot_table</span><span class="p">(</span>
+    <span class="n">index</span><span class="o">=</span><span class="s">'province'</span><span class="p">,</span>
+    <span class="n">values</span><span class="o">=</span><span class="n">subjects</span><span class="p">,</span>
+    <span class="n">aggfunc</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">mean</span>
+<span class="p">).</span><span class="nf">reset_index</span><span class="p">()</span>
+
+<span class="n">prov</span> <span class="o">=</span> <span class="n">prov</span><span class="p">.</span><span class="nf">merge</span><span class="p">(</span><span class="n">gdp</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s">'left'</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="s">'province'</span><span class="p">,</span> <span class="n">right_on</span><span class="o">=</span><span class="s">'provinces'</span><span class="p">)</span>
+<span class="n">prov</span><span class="p">.</span><span class="nf">head</span><span class="p">().</span><span class="nf">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>
+</th>
+      <th>province</th>
+      <th>biology</th>
+      <th>chemistry</th>
+      <th>civics_study</th>
+      <th>foreign_language</th>
+      <th>geography</th>
+      <th>history</th>
+      <th>literature</th>
+      <th>mathematics</th>
+      <th>physics</th>
+      <th>provinces</th>
+      <th>grdp (million usd)</th>
+      <th>population</th>
+      <th>grdp/cap</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>An Giang</td>
+      <td>5.08</td>
+      <td>5.49</td>
+      <td>7.92</td>
+      <td>4.71</td>
+      <td>6.44</td>
+      <td>4.84</td>
+      <td>5.92</td>
+      <td>5.89</td>
+      <td>5.63</td>
+      <td>An Giang</td>
+      <td>3226.8</td>
+      <td>1908352</td>
+      <td>1690.88</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Ba Ria Vung Tau</td>
+      <td>4.60</td>
+      <td>5.34</td>
+      <td>7.66</td>
+      <td>5.11</td>
+      <td>6.05</td>
+      <td>4.30</td>
+      <td>5.34</td>
+      <td>6.11</td>
+      <td>5.66</td>
+      <td>Ba Ria Vung Tau</td>
+      <td>6496.1</td>
+      <td>1148313</td>
+      <td>5657.08</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Bac Giang</td>
+      <td>4.84</td>
+      <td>5.62</td>
+      <td>7.57</td>
+      <td>4.07</td>
+      <td>6.17</td>
+      <td>4.43</td>
+      <td>5.53</td>
+      <td>5.45</td>
+      <td>5.88</td>
+      <td>Bac Giang</td>
+      <td>3772.7</td>
+      <td>1803950</td>
+      <td>2091.36</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Bac Kan</td>
+      <td>4.92</td>
+      <td>5.22</td>
+      <td>7.52</td>
+      <td>3.70</td>
+      <td>6.10</td>
+      <td>4.54</td>
+      <td>5.24</td>
+      <td>4.39</td>
+      <td>5.17</td>
+      <td>Bac Kan</td>
+      <td>427.2</td>
+      <td>313905</td>
+      <td>1360.92</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Bac Lieu</td>
+      <td>5.22</td>
+      <td>5.48</td>
+      <td>7.86</td>
+      <td>4.33</td>
+      <td>6.33</td>
+      <td>4.77</td>
+      <td>6.02</td>
+      <td>5.86</td>
+      <td>5.63</td>
+      <td>Bac Lieu</td>
+      <td>1638.2</td>
+      <td>907236</td>
+      <td>1805.70</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">fig4</span><span class="p">,</span> <span class="n">axes4</span> <span class="o">=</span> <span class="n">plt</span><span class="p">.</span><span class="nf">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+
+<span class="n">sns</span><span class="p">.</span><span class="nf">scatterplot</span><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">prov</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s">'grdp/cap'</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s">'mathematics'</span><span class="p">,</span>
+    <span class="n">size</span><span class="o">=</span><span class="s">'population'</span><span class="p">,</span>
+    <span class="n">legend</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="s">'#3c76aa'</span><span class="p">,</span>
+    <span class="n">alpha</span><span class="o">=</span><span class="p">.</span><span class="mi">75</span><span class="p">,</span>
+    <span class="n">ax</span><span class="o">=</span><span class="n">axes4</span>
+<span class="p">)</span>
+
+<span class="n">axes4</span><span class="p">.</span><span class="nf">axvspan</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">2500</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">'#fcba03'</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="p">.</span><span class="mi">25</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">ec</span><span class="o">=</span><span class="s">'None'</span><span class="p">)</span>
+
+
+<span class="n">axes4</span><span class="p">.</span><span class="nf">set_title</span><span class="p">(</span><span class="s">'Strong positive correlation between GDP per cap and Maths score</span><span class="se">\n</span><span class="s">up until 2,500 USD/person level'</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s">'left'</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s">"bold"</span><span class="p">)</span>
+
+<span class="n">sns</span><span class="p">.</span><span class="nf">despine</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axes4</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><img src="/assets/images/posts/vn-highschool-exam/2_analyze_23_0.png" alt="png"></p>
+
+<ul>
+  <li>From 0 to around 2,500 USD/cap, we see a very strong positive relation between GRDP and Maths score. But above 2,500 USD/cap the trend is flattende.</li>
+  <li>This implies that after a certain standard of living is achived, score is less impacted by wealth. At this point, basic education costs (books/tuitions) are covered. And other factors impact more.</li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">print</span><span class="p">(</span><span class="sa">f</span><span class="s">"Ha Noi avg Maths: </span><span class="si">{</span><span class="n">df</span><span class="p">[(</span><span class="n">df</span><span class="p">[</span><span class="s">'province'</span><span class="p">]</span><span class="o">==</span><span class="s">'Ha Noi'</span><span class="p">)][</span><span class="s">'mathematics'</span><span class="p">].</span><span class="nf">mean</span><span class="p">()</span><span class="si">:</span><span class="p">.</span><span class="mi">2</span><span class="n">f</span><span class="si">}</span><span class="s">"</span><span class="p">)</span>
+<span class="nf">print</span><span class="p">(</span><span class="sa">f</span><span class="s">"Nghe An avg Maths: </span><span class="si">{</span><span class="n">df</span><span class="p">[(</span><span class="n">df</span><span class="p">[</span><span class="s">'province'</span><span class="p">]</span><span class="o">==</span><span class="s">'Nghe An'</span><span class="p">)][</span><span class="s">'mathematics'</span><span class="p">].</span><span class="nf">mean</span><span class="p">()</span><span class="si">:</span><span class="p">.</span><span class="mi">2</span><span class="n">f</span><span class="si">}</span><span class="s">"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Ha Noi avg Maths: 6.03
+Nghe An avg Maths: 5.41
+</code></pre></div></div>
+
+<p>Hypothesis testing of 2 population means</p>
+
+<ul>
+  <li>Null hypothesis: 2 provinces have identical averages</li>
+  <li>Alternative hypothesis: 2 provinces have different averages</li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">hanoi_math</span> <span class="o">=</span> <span class="n">df</span><span class="p">[(</span><span class="n">df</span><span class="p">[</span><span class="s">'province'</span><span class="p">]</span><span class="o">==</span><span class="s">'Ha Noi'</span><span class="p">)][</span><span class="s">'mathematics'</span><span class="p">].</span><span class="nf">dropna</span><span class="p">()</span>
+<span class="n">nghean_math</span> <span class="o">=</span> <span class="n">df</span><span class="p">[(</span><span class="n">df</span><span class="p">[</span><span class="s">'province'</span><span class="p">]</span><span class="o">==</span><span class="s">'Nghe An'</span><span class="p">)][</span><span class="s">'mathematics'</span><span class="p">].</span><span class="nf">dropna</span><span class="p">()</span>
+
+<span class="n">stats</span><span class="p">.</span><span class="nf">ttest_ind</span><span class="p">(</span>
+    <span class="n">a</span><span class="o">=</span><span class="n">hanoi_math</span><span class="p">,</span>
+    <span class="n">b</span><span class="o">=</span><span class="n">nghean_math</span><span class="p">,</span>
+    <span class="n">alternative</span><span class="o">=</span><span class="s">'greater'</span><span class="p">,</span>
+    <span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Ttest_indResult(statistic=50.43617963341244, pvalue=0.0)
+</code></pre></div></div>
+
+<p>Since p-value &lt; 0.05, we reject the null hypothesis. Our sample data favor that students in Ha Noi indeed perform better than Nghe An.</p>
+
+<p>At the moment, it still make sense to support students from less developed regions. However, as shown in the chart, upon reaching certain GRDP level, students’ scores stop improving. Therefore, in order to ensure fairness, it will require policymaker to monitor the pace of development and make adjustments accordingly.</p>
+
+<h2 id="references">References</h2>
+
+<ol>
+  <li>Bonus scores based on region. https://huongnghiep.hocmai.vn/diem-uu-tien-la-gi-tat-tan-tat-ve-cach-tinh-diem-uu-tien-xet-tuyen-dai-hoc/</li>
+</ol>
+
+
+    </div>
+
+</article>
+<!--<div class="post-nav"><a class="previous" href="/jekyll-theme-yat/2022/09/29/sim-queue.html" title="Simulating a queue system">Simulating a queue system</a><a class="next" href="/jekyll-theme-yat/2023/02/15/guess-digits.html" title="Guessing user drawn digit">Guessing user drawn digit</a></div>-->
+    
+    <!-- back url at the bottom of the post-->
+  
+    <a href="https://dobeok.github.io/" title="" style="font-size:140%"><i class="fa fa-home"></i> Home</a>
+    <!--<div class="post-related">
+      <div>Related Articles</div>
+      <ul>
+        <li><a class="post-link" href="/jekyll-theme-yat/2023/03/08/predict-hdb-resale.html" title="Guessing user drawn digit">Analyzing Singapore&#39;s HDB flats resale price</a></li><li><a class="post-link" href="/jekyll-theme-yat/2022/09/29/sim-queue.html" title="Guessing user drawn digit">Simulating a queue system</a></li><li><a class="post-link" href="/jekyll-theme-yat/2020/08/21/estimate-pi.html" title="Guessing user drawn digit">Estimate pi using Monte Carlo simulation</a></li><li><a class="post-link" href="/jekyll-theme-yat/2020/08/20/web-scraping.html" title="Guessing user drawn digit">Web scraping with requests and BeautifulSoup</a></li></ul>
+    </div>--><!--<div class="post-comments"></div>-->
+
+  </section>
+</div>
+
+
+  </section>
+  <section class="sidebar" style="margin-left: 15px;">
+    <!-- Get sidebar items --><style type="text/css" media="screen">
+.post-menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+</style>
+
+<div class="post-menu">
+  <div class="post-menu-title">Contents</div>
+  <div class="post-menu-content"></div>
+</div>
+
+<script>
+  function generateContent() {
+    var menu = document.querySelector(".post-menu");
+    var menuContent =  menu.querySelector(".post-menu-content");
+    var headings = document.querySelector(".post-content").querySelectorAll("h2, h3, h4, h5, h6");
+
+    // Hide menu when no headings
+    if (headings.length === 0) {
+      return menu.style.display = "none";
+    }
+
+    // Generate post menu
+    var menuHTML = '';
+    for (var i = 0; i < headings.length; i++) {
+      var h = headings[i];
+      menuHTML += (
+        '<li class="h-' + h.tagName.toLowerCase() + '">'
+        + '<a href="#h-' + h.getAttribute('id') + '">' + h.textContent + '</a></li>');
+    }
+
+    menuContent.innerHTML = '<ul>' + menuHTML + '</ul>';
+
+    // The header element
+    var header = document.querySelector('header.site-header');
+
+    function doMenuCollapse(index, over_items) {
+      var items = menuContent.firstChild.children;
+
+      if (over_items == undefined) {
+        over_items = 20;
+      }
+
+      if (items.length < over_items) {
+        return;
+      }
+
+      var activeItem = items[index];
+      var beginItem = activeItem
+      var endItem = activeItem
+      var beginIndex = index;
+      var endIndex = index + 1;
+      while (beginIndex >= 0
+        && !items[beginIndex].classList.contains('h-h2')) {
+        beginIndex -= 1;
+      }
+      while (endIndex < items.length
+        && !items[endIndex].classList.contains('h-h2')) {
+        endIndex += 1;
+      }
+      for (var i = 0; i < beginIndex; i++) {
+        item = items[i]
+        if (!item.classList.contains('h-h2')) {
+          item.style.display = 'none';
+        }
+      }
+      for (var i = beginIndex + 1; i < endIndex; i++) {
+        item = items[i]
+        // if (!item.classList.contains('h-h2')) {
+          item.style.display = '';
+        // }
+      }
+      for (var i = endIndex; i < items.length; i++) {
+        item = items[i]
+        if (!item.classList.contains('h-h2')) {
+          item.style.display = 'none';
+        }
+      }
+    }
+
+    // Init menu collapsed
+    doMenuCollapse(-1);
+
+    // Active the menu item
+    window.addEventListener('scroll', function (event) {
+      var lastActive = menuContent.querySelector('.active');
+      var changed = true;
+      var activeIndex = -1;
+      for (var i = headings.length - 1; i >= 0; i--) {
+        var h = headings[i];
+        var headingRect = h.getBoundingClientRect();
+        var headerRect = header.getBoundingClientRect();
+        var headerTop = Math.floor(headerRect.top);
+        var headerHeight = Math.floor(headerRect.height);
+        var headerHeight = headerTop + headerHeight + 20;
+        if (headingRect.top <= headerHeight) {
+          var id = 'h-' + h.getAttribute('id');
+          var a = menuContent.querySelector('a[href="#' + id  + '"]');
+          var curActive = a.parentNode;
+          if (curActive) {
+            curActive.classList.add('active');
+            activeIndex = i;
+          }
+          if (lastActive == curActive) {
+            changed = false;
+          }
+          break;
+        }
+      }
+      if (changed) {
+        if (lastActive) {
+          lastActive.classList.remove('active');
+        }
+        doMenuCollapse(activeIndex);
+      }
+      event.preventDefault();
+    });
+  }
+  generateContent();
+</script>
+</section>
+</div>
+
+
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/jekyll-theme-yat/"></data>
+
+  <div class="wrapper">
+    <div class="site-footer-inner">
+<div>
+<span class="copyleft">©</span> 2020-2023 Vo Duy Do</div>
+      <div>
+<a href="https://github.com/dobeok" target="_blank">My Github </a> | <a href="/about">About Me</a>
+</div>
+      <!-- <div>Powered by <a title="Jekyll is a simple, blog-aware, static site
+      generator." href="https://jekyllrb.com/">Jekyll</a> &amp; <a title="Yat, yet
+      another theme." href="https://github.com/jeffreytse/jekyll-theme-yat">Yat Theme</a>.</div>
+      <div class="footer-col rss-subscribe">Subscribe <a href="/jekyll-theme-yat/feed.xml">via RSS</a></div> -->
+    </div>
+  </div>
+</footer>
+</body>
+</html>

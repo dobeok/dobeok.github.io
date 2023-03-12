@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="google-translate-customization" content="108d9124921d80c3-80e20d618ff053c8-g4f02ec6f3dba68b7-c">
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Creating a pokemon guesser | My data science projects</title>
+<meta name="generator" content="Jekyll v4.3.2">
+<meta property="og:title" content="Creating a pokemon guesser">
+<meta name="author" content="Vo Duy Do">
+<meta property="og:locale" content="en_US">
+<meta name="description" content="Using openCV to extract image contours and process image akin to guess the pokemon games">
+<meta property="og:description" content="Using openCV to extract image contours and process image akin to guess the pokemon games">
+<link rel="canonical" href="https://dobeok.github.io//jekyll-theme-yat/2022/06/01/pokermon-guesser.html">
+<meta property="og:url" content="https://dobeok.github.io//jekyll-theme-yat/2022/06/01/pokermon-guesser.html">
+<meta property="og:site_name" content="My data science projects">
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2022-06-01T04:00:00+00:00">
+<meta name="twitter:card" content="summary">
+<meta property="twitter:title" content="Creating a pokemon guesser">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Vo Duy Do"},"dateModified":"2022-06-01T04:00:00+00:00","datePublished":"2022-06-01T04:00:00+00:00","description":"Using openCV to extract image contours and process image akin to guess the pokemon games","headline":"Creating a pokemon guesser","mainEntityOfPage":{"@type":"WebPage","@id":"https://dobeok.github.io//jekyll-theme-yat/2022/06/01/pokermon-guesser.html"},"url":"https://dobeok.github.io//jekyll-theme-yat/2022/06/01/pokermon-guesser.html"}</script>
+<!-- End Jekyll SEO tag -->
+<!-- <link rel="shortcut icon" href="https://dobeok.github.io//jekyll-theme-yat/favicon.ico" /> -->
+  <link rel="icon" href="/assets/images/icon.svg">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-noto-sans@0.0.72/index.min.css">
+  
+  
+  <link rel="stylesheet" href="/jekyll-theme-yat/assets/css/main.css">
+  <script src="/jekyll-theme-yat/assets/js/main.js"></script><link type="application/atom+xml" rel="alternate" href="https://dobeok.github.io//jekyll-theme-yat/feed.xml" title="My data science projects">
+<script>
+  function initGoogleAnalytics() {
+    var doNotTrack = (window.doNotTrack === "1" || navigator.doNotTrack === "1" ||
+      navigator.doNotTrack === "yes" || navigator.msDoNotTrack === "1");
+    var enableDNT = "true" == "true";
+
+    if (!enableDNT || !doNotTrack) {
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'G-13G9T0DNE2', 'auto');
+      ga('send', 'pageview');
+    }
+  }
+  window.addEventListener("load", initGoogleAnalytics);
+</script>
+
+<!-- <link rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/default.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js"></script> -->
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/base16/material.min.css">
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+
+
+
+
+<!-- and it's easy to individually load additional languages -->
+<script charset="UTF-8" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/languages/go.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+// Init highlight js
+document.addEventListener('DOMContentLoaded', function(event) {
+  var els = document.querySelectorAll('pre code')
+
+  function addLangData(block) {
+    var outer = block.parentElement.parentElement.parentElement;
+    var lang = block.getAttribute('data-lang');
+    for (var i = 0; i < outer.classList.length; i++) {
+      var cls = outer.classList[i];
+      if (cls.startsWith('language-')) {
+        lang = cls;
+        break;
+      }
+    }
+    if (!lang) {
+      cls = block.getAttribute('class');
+      lang = cls ? cls.replace('hljs ', '') : '';
+    }
+    if (lang.startsWith('language-')) {
+      lang = lang.substr(9);
+    }
+    block.setAttribute('class', 'hljs ' + lang);
+    block.parentNode.setAttribute('data-lang', lang);
+  }
+
+  function addBadge(block) {
+    var enabled = ('true' || 'true').toLowerCase();
+    if (enabled == 'true') {
+      var pre = block.parentElement;
+      pre.classList.add('badge');
+    }
+  }
+
+  function handle(block) {
+    addLangData(block);
+    addBadge(block)
+    hljs.highlightBlock(block);
+  }
+
+  for (var i = 0; i < els.length; i++) {
+    var el = els[i];
+    handle(el);
+  }
+});
+</script>
+
+<style>
+  /* code language badge */
+  pre.badge::before {
+    content: attr(data-lang);
+    /* color: #f0f0f0; */
+    color: #fff;
+    /* background-color: #ff4e00; */
+    background-color: #000000 ;
+    padding: 0 .5em;
+    border-radius: 0 2px;
+    text-transform: uppercase;
+    text-align: center;
+    min-width: 32px;
+    display: inline-block;
+    position: absolute;
+    right: 0;
+  }
+
+  /* fix wrong badge display for firefox browser */
+  code > table pre::before {
+    display: none;
+  }
+</style>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-13G9T0DNE2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-13G9T0DNE2');
+</script>
+</head>
+<body>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<header class="site-header " role="banner">
+
+  <div class="wrapper">
+    <div class="site-header-inner">
+<span class="site-brand"><a class="site-brand-inner" rel="author" href="/jekyll-theme-yat/">
+  <img class="site-favicon" title="My data science projects" src="/assets/images/icon.svg" onerror="this.style.display='none'">
+  My data science projects
+  <!-- left hand side favicon and title - optional - I removed to clean up -->
+</a>
+</span><nav class="site-nav">
+          <input type="checkbox" id="nav-trigger" class="nav-trigger">
+          <label for="nav-trigger">
+            <span class="menu-icon">
+              <svg viewbox="0 0 18 15" width="18px" height="15px">
+                <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"></path>
+              </svg>
+            </span>
+          </label>
+
+          <div class="trigger">
+<a class="page-link" href="/jekyll-theme-yat/">Home</a><a class="page-link" href="/jekyll-theme-yat/about.html">About Me</a><!--
+
+
+
+
+
+
+
+
+
+<span class="page-link">
+
+
+
+<div id="google_translate_element" style="display: none;">
+</div>
+
+<span class="ct-language">
+  <ul class="list-unstyled ct-language-dropdown">
+    
+      <li>
+        <a href="#" class="lang-select" data-lang="en">
+          
+          <img src="https://cdn.countryflags.com/thumbs/united-states-of-america/flag-400.png" title="English">
+          
+        </a>
+      </li>
+    
+      <li>
+        <a href="#" class="lang-select" data-lang="vi">
+          
+          <img src="https://cdn.countryflags.com/thumbs/vietnam/flag-400.png" title="Vietnamese">
+          
+        </a>
+      </li>
+    
+  </ul>
+</span>
+
+<script type="text/javascript">
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({
+    pageLanguage: 'en',
+    autoDisplay: false,
+    layout: google.translate.TranslateElement.InlineLayout.VERTICAL
+  }, 'google_translate_element');
+
+  // Links to cross-origin destinations are unsafe
+  var gll = document.getElementsByClassName('goog-logo-link')[0];
+  if (gll) {
+    gll.setAttribute('rel', 'noopener');
+  }
+
+  function restoreLang() {
+    var iframe = document.getElementsByClassName('goog-te-banner-frame')[0];
+    if (!iframe) return;
+
+    var innerDoc = iframe.contentDocument || iframe.contentWindow.document;
+    var restore_el = innerDoc.getElementsByTagName("button");
+
+    for (var i = 0; i < restore_el.length; i++) {
+      if (restore_el[i].id.indexOf("restore") >= 0) {
+        restore_el[i].click();
+        var close_el = innerDoc.getElementsByClassName("goog-close-link");
+        close_el[0].click();
+        return;
+      }
+    }
+  }
+
+  function triggerHtmlEvent(element, eventName) {
+    var event;
+    if (document.createEvent) {
+      event = document.createEvent('HTMLEvents');
+      event.initEvent(eventName, true, true);
+      element.dispatchEvent(event);
+    } else {
+      event = document.createEventObject();
+      event.eventType = eventName;
+      element.fireEvent('on' + event.eventType, event);
+    }
+  }
+
+  var googleCombo = document.querySelector("select.goog-te-combo");
+  var langSelect = document.querySelector('.ct-language');
+  langSelect.addEventListener('click', function(event) {
+    if (!event.target) {
+      return;
+    }
+
+    var selected = document.querySelector('.ct-language .ct-language-selected');
+    if (selected) {
+      selected.classList.remove('ct-language-selected');
+    }
+
+    var target = event.target;
+    while (target && target !== langSelect ) {
+      if (target.matches('.lang-select')) {
+        break;
+      }
+      target = target.parentElement;
+    }
+
+    if (target && target.matches('.lang-select')) {
+      var lang = target.getAttribute('data-lang');
+      if (googleCombo.value == lang) {
+        restoreLang();
+      } else {
+        target.parentElement.classList.add('ct-language-selected');
+        googleCombo.value = lang;
+        triggerHtmlEvent(googleCombo, 'change');
+      }
+    }
+
+    event.preventDefault();
+  });
+}
+</script>
+
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+</span> -->
+</div>
+        </nav>
+</div>
+  </div>
+</header>
+
+<script>
+  function initHeader() {
+    var lastScrollY = getScrollPos().y;
+    var documentElement = document.documentElement;
+
+    function storeScrollData() {
+      var y = getScrollPos().y;documentElement.setAttribute("data-header-transparent", "");var scrollStatus = "";
+
+      if (y <= 0) {
+        scrollStatus = "top";
+      } else if ((window.innerHeight + y) >= document.body.offsetHeight) {
+        scrollStatus = "bottom";
+      } else {
+        var isScrollDown = (y - lastScrollY > 0) ? true : false;
+        scrollStatus = isScrollDown ? "down" : "up";
+      }
+
+      lastScrollY = y;
+      documentElement.setAttribute("data-scroll-status", scrollStatus);
+    }
+
+    window.addEventListener('scroll', function(e) {
+      storeScrollData();
+    });
+
+    storeScrollData();
+  }
+  document.addEventListener('DOMContentLoaded', initHeader);
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+  function hashLocate(hashValue) {
+    hashValue = hashValue.replace(/^.*#h-/, '');
+    hashValue = decodeURIComponent(hashValue);
+    var element = document.getElementById(hashValue);
+
+    if (!element) {
+      return;
+    }
+
+    var header = document.querySelector('header.site-header');
+    var headerRect = header.getBoundingClientRect();
+    var headerTop = Math.floor(headerRect.top);
+    var headerHeight = Math.floor(headerRect.height);
+    var scrollPos = getScrollPos();
+    var offsetY = element.offsetTop - (headerTop + headerHeight + 20);
+
+    if (offsetY == scrollPos.y) {
+      return;
+    }
+
+    if (headerTop == 0  && offsetY > scrollPos.y) {
+      offsetY += headerHeight + 2;
+    } else if (headerTop < 0  && offsetY < scrollPos.y) {
+      offsetY -= headerHeight - 2;
+    }
+
+    smoothScrollTo(offsetY);
+  }
+
+  // The first event occurred
+  window.addEventListener('load', function(event) {
+    if (window.location.hash) {
+      hashLocate(window.location.hash);
+    }
+  });
+
+  // The first event occurred
+  window.addEventListener('click', function(event) {
+    if (event.target.tagName.toLowerCase() == 'a') {
+      hashLocate(event.target.getAttribute('href'));
+    }
+  });
+</script>
+<!--<div class="theme-toggle">
+  <input type="checkbox" id="theme-switch">
+  <label for="theme-switch">
+    <div class="toggle"></div>
+    <div class="names">
+      <p class="light">Light</p>
+      <p class="dark">Dark</p>
+    </div>
+  </label>
+</div>
+
+
+
+
+<script>
+  (function() {
+    var sw = document.getElementById('theme-switch');
+    var html = document.getElementsByTagName('html')[0];
+    var nightModeOption = ('off' || 'auto').toLowerCase();
+    var storage = nightModeOption === 'manual'
+        ? localStorage
+        : sessionStorage;
+    var themeData = loadThemeData();
+
+    function saveThemeData(data) {
+      storage.setItem('theme', JSON.stringify(data));
+    }
+
+    function loadThemeData() {
+      var data = storage.getItem('theme');
+      try {
+        data = JSON.parse(data ? data : '');
+      } catch(e) {
+        data = { nightShift: undefined, autoToggleAt: 0 };
+        saveThemeData(data);
+      }
+      return data;
+    }
+
+    function handleThemeToggle(nightShift) {
+      themeData.nightShift = nightShift;
+      saveThemeData(themeData);
+      html.dataset.theme = nightShift ? 'dark' : 'light';
+      setTimeout(function() {
+        sw.checked = nightShift ? true : false;
+      }, 50);
+    }
+
+    function autoThemeToggle() {
+      // Next time point of theme toggle
+      var now = new Date();
+      var toggleAt = new Date();
+      var hours = now.getHours();
+      var nightShift = hours >= 19 || hours <=7;
+
+      if (nightShift) {
+        if (hours > 7) {
+          toggleAt.setDate(toggleAt.getDate() + 1);
+        }
+        toggleAt.setHours(7);
+      } else {
+        toggleAt.setHours(19);
+      }
+
+      toggleAt.setMinutes(0);
+      toggleAt.setSeconds(0);
+      toggleAt.setMilliseconds(0)
+
+      var delay = toggleAt.getTime() - now.getTime();
+
+      // auto toggle theme mode
+      setTimeout(function() {
+        handleThemeToggle(!nightShift);
+      }, delay);
+
+      return {
+        nightShift: nightShift,
+        toggleAt: toggleAt.getTime()
+      };
+    }
+
+    // Listen the theme toggle event
+    sw.addEventListener('change', function(event) {
+      handleThemeToggle(event.target.checked);
+    });
+
+    if (nightModeOption == 'auto') {
+      var data = autoThemeToggle();
+
+      // Toggle theme by local setting
+      if (data.toggleAt > themeData.autoToggleAt) {
+        themeData.autoToggleAt = data.toggleAt;
+        handleThemeToggle(data.nightShift);
+      } else {
+        handleThemeToggle(themeData.nightShift);
+      }
+    } else if (nightModeOption == 'manual') {
+      handleThemeToggle(themeData.nightShift);
+    } else {
+      var nightShift = themeData.nightShift;
+      if (nightShift === undefined) {
+        nightShift = nightModeOption === 'on';
+      }
+      handleThemeToggle(nightShift);
+    }
+  })();
+</script>
+--><div id="click-to-top" class="click-to-top">
+  <i class="fa fa-arrow-up"></i>
+</div>
+<script>
+  (function () {
+    const clickToTop = document.getElementById('click-to-top');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 100) {
+        clickToTop.classList.add('show')
+      }else {
+        clickToTop.classList.remove('show')
+      }
+    });
+    clickToTop.addEventListener('click', () => {
+      window.smoothScrollTo(0);
+    });
+  })();
+</script>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <div class="framework">
+  <section class="main">
+
+     <br>
+<div class="post">
+  <section>
+    
+    <!-- custom title in each post  -->
+    <p style="color:black;font-weight:bold;font-size:180%;">Creating a pokemon guesser</p>
+    <hr>
+
+
+
+
+
+
+
+
+
+<article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+    <div class="post-content e-content" itemprop="articleBody">
+
+      <h3 id="introduction">Introduction</h3>
+
+<p>“Who’s that pokemon?” is a well known trivia game where people are shown silhouette of a pokemon and then try to guess its name. In this post, I will recreate the images. To do so, I  start off with a colored image of a pokemon, and then extract its sihoulette using contour detection. In addition to the base game, I will also add some flavors. For example: adding hints by showing a pixelated image, or revealing part of the original image.</p>
+
+<p><img src="/assets/images/posts/pokemon-guesser/pokemon-banner.jpg" alt="demo"></p>
+
+<h3 id="getting-the-base-images">Getting the base images</h3>
+
+<p>It’s best to get all base images from the same source so that the art style is consistent. <a href="https://pokemondb.net/">pokemondb.net</a> has a nice and complete list of images from all generations. In the code to download images, I have added some random delay to slow down the requests.</p>
+
+<pre><code class="language-python3">import requests
+import random
+import time
+import pandas as pd
+
+try:
+    plist = pd.read_csv('./resources/pokemon_list.csv', usecols=['pokemon'])['pokemon'].tolist()
+except:
+    # fallback in case file's not available
+    plist = ['carvanha', 'tangrowth', 'simisear', 'scyther', 'tentacruel', 'clawitzer',
+        'trevenant', 'gardevoir', 'venomoth', 'perrserker']
+
+if __name__ == '__main__':
+    
+    for idx, pokemon_name in enumerate(plist):
+        image_url = f'https://img.pokemondb.net/artwork/vector/large/{pokemon_name}.png'
+        
+
+        img_data = requests.get(image_url).content
+        with open(f'./resources/img_pokemon_png/{pokemon_name}.png', 'wb') as handler:
+            handler.write(img_data)
+
+        time.sleep(random.random() * 5)
+
+</code></pre>
+<!-- <script src="https://gist.github.com/dobeok/17e5b302e067e92dbf93c87a78094003.js"></script> -->
+
+<h3 id="processing-the-image">Processing the image</h3>
+
+<p>The steps to process the images are:</p>
+
+<ol>
+  <li>Convert to grayscale (and optionally, image thresholding)</li>
+  <li>Choose a contour retrieval method</li>
+  <li>Adding background</li>
+</ol>
+
+<h4 id="read-image-convert-to-grayscale-and-thresholding">Read image, convert to grayscale, and thresholding</h4>
+
+<p>While processing images, I like to create multiple subplots to keep reference of the original image and keep track of the transformations.</p>
+
+<pre><code class="language-python3">import cv2
+import matplotlib.pyplot as plt
+
+
+file_name = 'resources/img_pokemon_jpg/amoonguss.jpg'
+
+# here I keep both the colored and grayscale images to better visualise the output
+# note that cv2 use BGR color space,
+# so we need to use cv2.cvtColor method to convert back to RGB
+# when plotting with `matplotlib` to show true colors
+
+img_bgr = cv2.imread(img, cv2)
+img_gray = cv2.imread(file_name, cv2.IMREAD_GRAYSCALE)
+
+</code></pre>
+
+<h4 id="finding-contours">Finding contours</h4>
+
+<pre><code class="language-python3">fig, axes = plt.subplots(ncols=2, nrows=1, figsize=(12, 6), sharey=True)
+
+axes[0].set_title('Original Image', fontsize=14)
+axes[1].set_title('Grayscaled Image', fontsize=14)
+axes[2].set_title('All Contours', fontsize=14)
+axes[3].set_title('External Contours', fontsize=14)
+
+# orignal image
+axes[0].imshow(img_rgb)
+
+# greyscaled image
+ret, thresh = cv2.threshold(img_gray, 100, 255, 0)
+axes[1].imshow(cv2.cvtColor(img_gray, cv2.COLOR_BGR2RGB))
+axes[0].imshow(thresh)
+</code></pre>
+
+<p>From the documentation, cv2.findContours has 4 different retrieval modes:</p>
+<ul>
+  <li>
+<code class="language-plaintext highlighter-rouge">RETR_EXTERNAL</code>: retrieves only the extreme outer contours <em>(what we want)</em>
+</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">RETR_LIST</code>: retrieves all of the contours without establishing any hierarchical relationships.</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">RETR_CCOMP</code>: retrieves all of the contours and organizes them into a two-level hierarchy. At the top level, there are external boundaries of the components. At the second level, there are boundaries of the holes. If there is another contour inside a hole of a connected component, it is still put at the top level.</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">RETR_TREE</code>:retrieves all of the contours and reconstructs a full hierarchy of nested contours.</li>
+</ul>
+
+<p>We only need the outer contour, so I will run with <code class="language-plaintext highlighter-rouge">RETR_EXTERNAL</code> flag. However, to illustrate the different possibilities, I will plot both the External Contours and all contours.</p>
+
+<pre><code class="language-python3"># all contours
+contours, _ = cv2.findContours(img_gray, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+canvas = np.zeros_like(img_gray)
+cv2.drawContours(canvas, contours, -1, (255, 255, 0), 3)
+axes[2].imshow(canvas)
+
+
+
+# external contours
+contours, _ = cv2.findContours(img_gray, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+canvas = np.zeros_like(img_gray)
+cv2.drawContours(canvas, contours, -1, (255, 255, 0), 3)
+axes[3].imshow(canvas)
+
+</code></pre>
+
+<p><img src="/assets/images/posts/pokemon-guesser/contours-amoonguss.png" alt="img"></p>
+
+<h4 id="merging-contour-with-the-background">Merging contour with the background</h4>
+
+<p>The remaining task is to add a background to the sihlouette. A simple solution is just to align the siloulette’s centroid with a chosen point on the background. Since the background image can be recycled, I can hardcode the coordiate and here I chose the point at 600, 550</p>
+
+<p><img src="/assets/images/posts/pokemon-guesser/template.jpg" alt="background"></p>
+
+<pre><code class="language-python3">
+CENTER_COORDS = 600, 550
+FILL_COLOR =  (142, 100, 46)
+
+def shift_center(contours, center_coords=CENTER_COORDS):
+    """
+    align the image with the template
+    """
+
+    # find centroid of the sihoulette
+    M = cv2.moments(contours[0])
+    
+    cX = int(M["m10"] / M["m00"])
+    cY = int(M["m01"] / M["m00"])
+    
+    # calculate distance to shift
+    delta_X = center_coords[0] - cX
+    delta_Y = center_coords[1] - cY
+
+    # contours are returned as tuple (numpy_array, )
+    coords_array = contours[0]
+
+    coords_array[:, :, 0] = coords_array[:, :, 0] + delta_Y
+    coords_array[:, :, 1] = coords_array[:, :, 1] + delta_X
+
+    return contours
+    
+
+# read template image
+template_path = './resources/template.jpg'
+
+contours = shift_center(contours)
+
+
+base = cv2.imread(template_path)
+cv2.drawContours(base, contours, -1, thickness=2, lineType=cv2.LINE_AA, color=(0, 0, 0))
+plt.imshow(base)
+
+# color the contour to create silhouette effects
+</code></pre>
+
+<h3 id="final-result">Final result</h3>
+
+<p>Putting everything together, we achieve what looks just like the original game! Perhaps you might want to play around with positioning, or trying out different colors depending on your creativity.</p>
+
+<p><img src="/assets/images/posts/pokemon-guesser/final-amoonguss.png" alt="amoonguss"></p>
+
+<h4 id="more-to-come">More to come</h4>
+
+<p>In addition to the basic silhouette effects, I’ve also tinkered with pixelating and re-coloring the images to add some variations. I will make a follow up post sharing the process.</p>
+
+<p><img src="/assets/images/posts/pokemon-guesser/pixelate%20demo.jpg" style="max-width: 600px;"></p>
+
+<h3 id="end">End</h3>
+
+<!-- https://twitter.com/Marco_Piani/status/1567880008697352195 -->
+
+
+    </div>
+
+</article>
+<!--<div class="post-nav"><a class="previous" href="/jekyll-theme-yat/2022/04/01/DCA-apps.html" title="Building a DCA simulation apps with Streamlit">Building a DCA simulation apps with...</a><a class="next" href="/jekyll-theme-yat/2022/08/05/cohort-retention.html" title="Cohort and Retention analysis">Cohort and Retention analysis</a></div>-->
+    
+    <!-- back url at the bottom of the post-->
+  
+    <a href="https://dobeok.github.io/" title="" style="font-size:140%"><i class="fa fa-home"></i> Home</a>
+    <!--<div class="post-related">
+      <div>Related Articles</div>
+      <ul>
+        <li><a class="post-link" href="/jekyll-theme-yat/2020/08/21/estimate-pi.html" title="Cohort and Retention analysis">Estimate pi using Monte Carlo simulation</a></li><li><a class="post-link" href="/jekyll-theme-yat/2022/08/05/cohort-retention.html" title="Cohort and Retention analysis">Cohort and Retention analysis</a></li><li><a class="post-link" href="/jekyll-theme-yat/2022/09/29/sim-queue.html" title="Cohort and Retention analysis">Simulating a queue system</a></li><li><a class="post-link" href="/jekyll-theme-yat/2023/01/31/vn-exam.html" title="Cohort and Retention analysis">Analyzing Vietnam&#39;s high school graduation exam results</a></li></ul>
+    </div>--><!--<div class="post-comments"></div>-->
+
+  </section>
+</div>
+
+
+  </section>
+  <section class="sidebar" style="margin-left: 15px;">
+    <!-- Get sidebar items --><style type="text/css" media="screen">
+.post-menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+</style>
+
+<div class="post-menu">
+  <div class="post-menu-title">Contents</div>
+  <div class="post-menu-content"></div>
+</div>
+
+<script>
+  function generateContent() {
+    var menu = document.querySelector(".post-menu");
+    var menuContent =  menu.querySelector(".post-menu-content");
+    var headings = document.querySelector(".post-content").querySelectorAll("h2, h3, h4, h5, h6");
+
+    // Hide menu when no headings
+    if (headings.length === 0) {
+      return menu.style.display = "none";
+    }
+
+    // Generate post menu
+    var menuHTML = '';
+    for (var i = 0; i < headings.length; i++) {
+      var h = headings[i];
+      menuHTML += (
+        '<li class="h-' + h.tagName.toLowerCase() + '">'
+        + '<a href="#h-' + h.getAttribute('id') + '">' + h.textContent + '</a></li>');
+    }
+
+    menuContent.innerHTML = '<ul>' + menuHTML + '</ul>';
+
+    // The header element
+    var header = document.querySelector('header.site-header');
+
+    function doMenuCollapse(index, over_items) {
+      var items = menuContent.firstChild.children;
+
+      if (over_items == undefined) {
+        over_items = 20;
+      }
+
+      if (items.length < over_items) {
+        return;
+      }
+
+      var activeItem = items[index];
+      var beginItem = activeItem
+      var endItem = activeItem
+      var beginIndex = index;
+      var endIndex = index + 1;
+      while (beginIndex >= 0
+        && !items[beginIndex].classList.contains('h-h2')) {
+        beginIndex -= 1;
+      }
+      while (endIndex < items.length
+        && !items[endIndex].classList.contains('h-h2')) {
+        endIndex += 1;
+      }
+      for (var i = 0; i < beginIndex; i++) {
+        item = items[i]
+        if (!item.classList.contains('h-h2')) {
+          item.style.display = 'none';
+        }
+      }
+      for (var i = beginIndex + 1; i < endIndex; i++) {
+        item = items[i]
+        // if (!item.classList.contains('h-h2')) {
+          item.style.display = '';
+        // }
+      }
+      for (var i = endIndex; i < items.length; i++) {
+        item = items[i]
+        if (!item.classList.contains('h-h2')) {
+          item.style.display = 'none';
+        }
+      }
+    }
+
+    // Init menu collapsed
+    doMenuCollapse(-1);
+
+    // Active the menu item
+    window.addEventListener('scroll', function (event) {
+      var lastActive = menuContent.querySelector('.active');
+      var changed = true;
+      var activeIndex = -1;
+      for (var i = headings.length - 1; i >= 0; i--) {
+        var h = headings[i];
+        var headingRect = h.getBoundingClientRect();
+        var headerRect = header.getBoundingClientRect();
+        var headerTop = Math.floor(headerRect.top);
+        var headerHeight = Math.floor(headerRect.height);
+        var headerHeight = headerTop + headerHeight + 20;
+        if (headingRect.top <= headerHeight) {
+          var id = 'h-' + h.getAttribute('id');
+          var a = menuContent.querySelector('a[href="#' + id  + '"]');
+          var curActive = a.parentNode;
+          if (curActive) {
+            curActive.classList.add('active');
+            activeIndex = i;
+          }
+          if (lastActive == curActive) {
+            changed = false;
+          }
+          break;
+        }
+      }
+      if (changed) {
+        if (lastActive) {
+          lastActive.classList.remove('active');
+        }
+        doMenuCollapse(activeIndex);
+      }
+      event.preventDefault();
+    });
+  }
+  generateContent();
+</script>
+</section>
+</div>
+
+
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/jekyll-theme-yat/"></data>
+
+  <div class="wrapper">
+    <div class="site-footer-inner">
+<div>
+<span class="copyleft">©</span> 2020-2023 Vo Duy Do</div>
+      <div>
+<a href="https://github.com/dobeok" target="_blank">My Github </a> | <a href="/about">About Me</a>
+</div>
+      <!-- <div>Powered by <a title="Jekyll is a simple, blog-aware, static site
+      generator." href="https://jekyllrb.com/">Jekyll</a> &amp; <a title="Yat, yet
+      another theme." href="https://github.com/jeffreytse/jekyll-theme-yat">Yat Theme</a>.</div>
+      <div class="footer-col rss-subscribe">Subscribe <a href="/jekyll-theme-yat/feed.xml">via RSS</a></div> -->
+    </div>
+  </div>
+</footer>
+</body>
+</html>

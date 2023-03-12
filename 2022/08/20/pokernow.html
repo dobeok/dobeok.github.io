@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="google-translate-customization" content="108d9124921d80c3-80e20d618ff053c8-g4f02ec6f3dba68b7-c">
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Analyzing my poker games | My data science projects</title>
+<meta name="generator" content="Jekyll v4.3.2">
+<meta property="og:title" content="Analyzing my poker games">
+<meta name="author" content="Vo Duy Do">
+<meta property="og:locale" content="en_US">
+<meta name="description" content="Using pandas to parse raw game logs to analyze game fairness, players trends and behaviors.">
+<meta property="og:description" content="Using pandas to parse raw game logs to analyze game fairness, players trends and behaviors.">
+<link rel="canonical" href="https://dobeok.github.io//jekyll-theme-yat/2022/08/20/pokernow.html">
+<meta property="og:url" content="https://dobeok.github.io//jekyll-theme-yat/2022/08/20/pokernow.html">
+<meta property="og:site_name" content="My data science projects">
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2022-08-20T05:11:27+00:00">
+<meta name="twitter:card" content="summary">
+<meta property="twitter:title" content="Analyzing my poker games">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Vo Duy Do"},"dateModified":"2022-08-20T05:11:27+00:00","datePublished":"2022-08-20T05:11:27+00:00","description":"Using pandas to parse raw game logs to analyze game fairness, players trends and behaviors.","headline":"Analyzing my poker games","mainEntityOfPage":{"@type":"WebPage","@id":"https://dobeok.github.io//jekyll-theme-yat/2022/08/20/pokernow.html"},"url":"https://dobeok.github.io//jekyll-theme-yat/2022/08/20/pokernow.html"}</script>
+<!-- End Jekyll SEO tag -->
+<!-- <link rel="shortcut icon" href="https://dobeok.github.io//jekyll-theme-yat/favicon.ico" /> -->
+  <link rel="icon" href="/assets/images/icon.svg">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-noto-sans@0.0.72/index.min.css">
+  
+  
+  <link rel="stylesheet" href="/jekyll-theme-yat/assets/css/main.css">
+  <script src="/jekyll-theme-yat/assets/js/main.js"></script><link type="application/atom+xml" rel="alternate" href="https://dobeok.github.io//jekyll-theme-yat/feed.xml" title="My data science projects">
+<script>
+  function initGoogleAnalytics() {
+    var doNotTrack = (window.doNotTrack === "1" || navigator.doNotTrack === "1" ||
+      navigator.doNotTrack === "yes" || navigator.msDoNotTrack === "1");
+    var enableDNT = "true" == "true";
+
+    if (!enableDNT || !doNotTrack) {
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'G-13G9T0DNE2', 'auto');
+      ga('send', 'pageview');
+    }
+  }
+  window.addEventListener("load", initGoogleAnalytics);
+</script>
+
+<!-- <link rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/default.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js"></script> -->
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/base16/material.min.css">
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+
+
+
+
+<!-- and it's easy to individually load additional languages -->
+<script charset="UTF-8" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/languages/go.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+// Init highlight js
+document.addEventListener('DOMContentLoaded', function(event) {
+  var els = document.querySelectorAll('pre code')
+
+  function addLangData(block) {
+    var outer = block.parentElement.parentElement.parentElement;
+    var lang = block.getAttribute('data-lang');
+    for (var i = 0; i < outer.classList.length; i++) {
+      var cls = outer.classList[i];
+      if (cls.startsWith('language-')) {
+        lang = cls;
+        break;
+      }
+    }
+    if (!lang) {
+      cls = block.getAttribute('class');
+      lang = cls ? cls.replace('hljs ', '') : '';
+    }
+    if (lang.startsWith('language-')) {
+      lang = lang.substr(9);
+    }
+    block.setAttribute('class', 'hljs ' + lang);
+    block.parentNode.setAttribute('data-lang', lang);
+  }
+
+  function addBadge(block) {
+    var enabled = ('true' || 'true').toLowerCase();
+    if (enabled == 'true') {
+      var pre = block.parentElement;
+      pre.classList.add('badge');
+    }
+  }
+
+  function handle(block) {
+    addLangData(block);
+    addBadge(block)
+    hljs.highlightBlock(block);
+  }
+
+  for (var i = 0; i < els.length; i++) {
+    var el = els[i];
+    handle(el);
+  }
+});
+</script>
+
+<style>
+  /* code language badge */
+  pre.badge::before {
+    content: attr(data-lang);
+    /* color: #f0f0f0; */
+    color: #fff;
+    /* background-color: #ff4e00; */
+    background-color: #000000 ;
+    padding: 0 .5em;
+    border-radius: 0 2px;
+    text-transform: uppercase;
+    text-align: center;
+    min-width: 32px;
+    display: inline-block;
+    position: absolute;
+    right: 0;
+  }
+
+  /* fix wrong badge display for firefox browser */
+  code > table pre::before {
+    display: none;
+  }
+</style>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-13G9T0DNE2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-13G9T0DNE2');
+</script>
+</head>
+<body>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<header class="site-header " role="banner">
+
+  <div class="wrapper">
+    <div class="site-header-inner">
+<span class="site-brand"><a class="site-brand-inner" rel="author" href="/jekyll-theme-yat/">
+  <img class="site-favicon" title="My data science projects" src="/assets/images/icon.svg" onerror="this.style.display='none'">
+  My data science projects
+  <!-- left hand side favicon and title - optional - I removed to clean up -->
+</a>
+</span><nav class="site-nav">
+          <input type="checkbox" id="nav-trigger" class="nav-trigger">
+          <label for="nav-trigger">
+            <span class="menu-icon">
+              <svg viewbox="0 0 18 15" width="18px" height="15px">
+                <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"></path>
+              </svg>
+            </span>
+          </label>
+
+          <div class="trigger">
+<a class="page-link" href="/jekyll-theme-yat/">Home</a><a class="page-link" href="/jekyll-theme-yat/about.html">About Me</a><!--
+
+
+
+
+
+
+
+
+
+<span class="page-link">
+
+
+
+<div id="google_translate_element" style="display: none;">
+</div>
+
+<span class="ct-language">
+  <ul class="list-unstyled ct-language-dropdown">
+    
+      <li>
+        <a href="#" class="lang-select" data-lang="en">
+          
+          <img src="https://cdn.countryflags.com/thumbs/united-states-of-america/flag-400.png" title="English">
+          
+        </a>
+      </li>
+    
+      <li>
+        <a href="#" class="lang-select" data-lang="vi">
+          
+          <img src="https://cdn.countryflags.com/thumbs/vietnam/flag-400.png" title="Vietnamese">
+          
+        </a>
+      </li>
+    
+  </ul>
+</span>
+
+<script type="text/javascript">
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({
+    pageLanguage: 'en',
+    autoDisplay: false,
+    layout: google.translate.TranslateElement.InlineLayout.VERTICAL
+  }, 'google_translate_element');
+
+  // Links to cross-origin destinations are unsafe
+  var gll = document.getElementsByClassName('goog-logo-link')[0];
+  if (gll) {
+    gll.setAttribute('rel', 'noopener');
+  }
+
+  function restoreLang() {
+    var iframe = document.getElementsByClassName('goog-te-banner-frame')[0];
+    if (!iframe) return;
+
+    var innerDoc = iframe.contentDocument || iframe.contentWindow.document;
+    var restore_el = innerDoc.getElementsByTagName("button");
+
+    for (var i = 0; i < restore_el.length; i++) {
+      if (restore_el[i].id.indexOf("restore") >= 0) {
+        restore_el[i].click();
+        var close_el = innerDoc.getElementsByClassName("goog-close-link");
+        close_el[0].click();
+        return;
+      }
+    }
+  }
+
+  function triggerHtmlEvent(element, eventName) {
+    var event;
+    if (document.createEvent) {
+      event = document.createEvent('HTMLEvents');
+      event.initEvent(eventName, true, true);
+      element.dispatchEvent(event);
+    } else {
+      event = document.createEventObject();
+      event.eventType = eventName;
+      element.fireEvent('on' + event.eventType, event);
+    }
+  }
+
+  var googleCombo = document.querySelector("select.goog-te-combo");
+  var langSelect = document.querySelector('.ct-language');
+  langSelect.addEventListener('click', function(event) {
+    if (!event.target) {
+      return;
+    }
+
+    var selected = document.querySelector('.ct-language .ct-language-selected');
+    if (selected) {
+      selected.classList.remove('ct-language-selected');
+    }
+
+    var target = event.target;
+    while (target && target !== langSelect ) {
+      if (target.matches('.lang-select')) {
+        break;
+      }
+      target = target.parentElement;
+    }
+
+    if (target && target.matches('.lang-select')) {
+      var lang = target.getAttribute('data-lang');
+      if (googleCombo.value == lang) {
+        restoreLang();
+      } else {
+        target.parentElement.classList.add('ct-language-selected');
+        googleCombo.value = lang;
+        triggerHtmlEvent(googleCombo, 'change');
+      }
+    }
+
+    event.preventDefault();
+  });
+}
+</script>
+
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+</span> -->
+</div>
+        </nav>
+</div>
+  </div>
+</header>
+
+<script>
+  function initHeader() {
+    var lastScrollY = getScrollPos().y;
+    var documentElement = document.documentElement;
+
+    function storeScrollData() {
+      var y = getScrollPos().y;documentElement.setAttribute("data-header-transparent", "");var scrollStatus = "";
+
+      if (y <= 0) {
+        scrollStatus = "top";
+      } else if ((window.innerHeight + y) >= document.body.offsetHeight) {
+        scrollStatus = "bottom";
+      } else {
+        var isScrollDown = (y - lastScrollY > 0) ? true : false;
+        scrollStatus = isScrollDown ? "down" : "up";
+      }
+
+      lastScrollY = y;
+      documentElement.setAttribute("data-scroll-status", scrollStatus);
+    }
+
+    window.addEventListener('scroll', function(e) {
+      storeScrollData();
+    });
+
+    storeScrollData();
+  }
+  document.addEventListener('DOMContentLoaded', initHeader);
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+  function hashLocate(hashValue) {
+    hashValue = hashValue.replace(/^.*#h-/, '');
+    hashValue = decodeURIComponent(hashValue);
+    var element = document.getElementById(hashValue);
+
+    if (!element) {
+      return;
+    }
+
+    var header = document.querySelector('header.site-header');
+    var headerRect = header.getBoundingClientRect();
+    var headerTop = Math.floor(headerRect.top);
+    var headerHeight = Math.floor(headerRect.height);
+    var scrollPos = getScrollPos();
+    var offsetY = element.offsetTop - (headerTop + headerHeight + 20);
+
+    if (offsetY == scrollPos.y) {
+      return;
+    }
+
+    if (headerTop == 0  && offsetY > scrollPos.y) {
+      offsetY += headerHeight + 2;
+    } else if (headerTop < 0  && offsetY < scrollPos.y) {
+      offsetY -= headerHeight - 2;
+    }
+
+    smoothScrollTo(offsetY);
+  }
+
+  // The first event occurred
+  window.addEventListener('load', function(event) {
+    if (window.location.hash) {
+      hashLocate(window.location.hash);
+    }
+  });
+
+  // The first event occurred
+  window.addEventListener('click', function(event) {
+    if (event.target.tagName.toLowerCase() == 'a') {
+      hashLocate(event.target.getAttribute('href'));
+    }
+  });
+</script>
+<!--<div class="theme-toggle">
+  <input type="checkbox" id="theme-switch">
+  <label for="theme-switch">
+    <div class="toggle"></div>
+    <div class="names">
+      <p class="light">Light</p>
+      <p class="dark">Dark</p>
+    </div>
+  </label>
+</div>
+
+
+
+
+<script>
+  (function() {
+    var sw = document.getElementById('theme-switch');
+    var html = document.getElementsByTagName('html')[0];
+    var nightModeOption = ('off' || 'auto').toLowerCase();
+    var storage = nightModeOption === 'manual'
+        ? localStorage
+        : sessionStorage;
+    var themeData = loadThemeData();
+
+    function saveThemeData(data) {
+      storage.setItem('theme', JSON.stringify(data));
+    }
+
+    function loadThemeData() {
+      var data = storage.getItem('theme');
+      try {
+        data = JSON.parse(data ? data : '');
+      } catch(e) {
+        data = { nightShift: undefined, autoToggleAt: 0 };
+        saveThemeData(data);
+      }
+      return data;
+    }
+
+    function handleThemeToggle(nightShift) {
+      themeData.nightShift = nightShift;
+      saveThemeData(themeData);
+      html.dataset.theme = nightShift ? 'dark' : 'light';
+      setTimeout(function() {
+        sw.checked = nightShift ? true : false;
+      }, 50);
+    }
+
+    function autoThemeToggle() {
+      // Next time point of theme toggle
+      var now = new Date();
+      var toggleAt = new Date();
+      var hours = now.getHours();
+      var nightShift = hours >= 19 || hours <=7;
+
+      if (nightShift) {
+        if (hours > 7) {
+          toggleAt.setDate(toggleAt.getDate() + 1);
+        }
+        toggleAt.setHours(7);
+      } else {
+        toggleAt.setHours(19);
+      }
+
+      toggleAt.setMinutes(0);
+      toggleAt.setSeconds(0);
+      toggleAt.setMilliseconds(0)
+
+      var delay = toggleAt.getTime() - now.getTime();
+
+      // auto toggle theme mode
+      setTimeout(function() {
+        handleThemeToggle(!nightShift);
+      }, delay);
+
+      return {
+        nightShift: nightShift,
+        toggleAt: toggleAt.getTime()
+      };
+    }
+
+    // Listen the theme toggle event
+    sw.addEventListener('change', function(event) {
+      handleThemeToggle(event.target.checked);
+    });
+
+    if (nightModeOption == 'auto') {
+      var data = autoThemeToggle();
+
+      // Toggle theme by local setting
+      if (data.toggleAt > themeData.autoToggleAt) {
+        themeData.autoToggleAt = data.toggleAt;
+        handleThemeToggle(data.nightShift);
+      } else {
+        handleThemeToggle(themeData.nightShift);
+      }
+    } else if (nightModeOption == 'manual') {
+      handleThemeToggle(themeData.nightShift);
+    } else {
+      var nightShift = themeData.nightShift;
+      if (nightShift === undefined) {
+        nightShift = nightModeOption === 'on';
+      }
+      handleThemeToggle(nightShift);
+    }
+  })();
+</script>
+--><div id="click-to-top" class="click-to-top">
+  <i class="fa fa-arrow-up"></i>
+</div>
+<script>
+  (function () {
+    const clickToTop = document.getElementById('click-to-top');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 100) {
+        clickToTop.classList.add('show')
+      }else {
+        clickToTop.classList.remove('show')
+      }
+    });
+    clickToTop.addEventListener('click', () => {
+      window.smoothScrollTo(0);
+    });
+  })();
+</script>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <div class="framework">
+  <section class="main">
+
+     <br>
+<div class="post">
+  <section>
+    
+    <!-- custom title in each post  -->
+    <p style="color:black;font-weight:bold;font-size:180%;">Analyzing my poker games</p>
+    <hr>
+
+
+
+
+
+
+
+
+
+<article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+    <div class="post-content e-content" itemprop="articleBody">
+
+      <h3 id="introduction">Introduction</h3>
+
+<p>During covid group gathering restrictions, my friend groups moved our board game sessions online, including poker (thanks <a href="https://www.pokernow.club/">pokernow.club</a>). The game also provided log data in csv format for each hand. I always wanted to find out what the winning players are doing differently, and hopefully improve my game.</p>
+
+<p align="center">
+  <img alt="img-name" src="/assets/images/posts/pokernow/pokernow-screenshot.jpg">
+    <em>Where I used to hang out during lockdown</em>
+</p>
+
+<h3 id="raw-data">Raw data</h3>
+<p>A sample hand in the game log looks like below. The 1st column contains the log details (player names, action, value). The 2nd column contains timestamp. At first glance, there are a a lot of details. However, we will need to do some data pre-processing before we can start analyzing.</p>
+
+<script src="https://gist.github.com/dobeok/d5006c2bf249277680e890b1fa19b8d6.js"></script>
+
+<h3 id="is-the-game-fair">Is the game fair?</h3>
+
+<p>Since the game’s Random Number Generator is a blackbox, we wanted to make sure that the cards dealt are fair. One way to verify this is by looking at flopped cards and plot their distributions. We can extract all flops by grepping lines containing “flop”</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;</span> <span class="nb">ls</span>
+<span class="c"># raw_data.csv</span>
+
+<span class="o">&gt;</span> <span class="nb">grep</span> <span class="nt">-i</span> flop raw_data.csv
+<span class="c"># "Flop:  [3♦, Q♠, 7♥]"...</span>
+<span class="c"># "Flop: [...</span>
+</code></pre></div></div>
+
+<p>As we moved from offline to online, we were able to play a lot more hands as there’s no time need to shuffle and deal out the cards. That’s when we also started to observed patterns that didn’t exists! (eg. confirmation biases for perceived higher frequencies of certain cards combinations).</p>
+
+<p><img src="/assets/images/posts/pokernow/flop-dist.png" alt="flop frequency"></p>
+
+<p>I conductde a Chi-squared goodness-of-fit test and the observed frequencies are not statistically significant. Game was fair.</p>
+
+<p>The above method would work similarly for Turns and Rivers. The full code can be found <a href="https://github.com/dobeok/analyze-pokernow-games/blob/main/A-game-setup/analyze-flops.py">here</a></p>
+
+<h3 id="how-did-we-play-as-a-group">How did we play as a group?</h3>
+
+<h4 id="pot-sizes">Pot sizes</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="p">.</span><span class="nf">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">pot_sizes</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="nf">groupby</span><span class="p">(</span><span class="s">'hand_id'</span><span class="p">)[</span><span class="s">'pot_size'</span><span class="p">].</span><span class="nf">max</span><span class="p">().</span><span class="nf">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span> <span class="o">/</span> <span class="mf">0.20</span>
+
+
+<span class="n">pot_sizes</span><span class="p">.</span><span class="nf">to_frame</span><span class="p">().</span><span class="nf">hist</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ec</span><span class="o">=</span><span class="s">'white'</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nf">set_title</span><span class="p">(</span><span class="s">'Raw pot size distribution'</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nf">set_ylabel</span><span class="p">(</span><span class="s">'Number of hands'</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nf">set_xlabel</span><span class="p">(</span><span class="s">'Big blinds'</span><span class="p">)</span>
+
+<span class="n">np</span><span class="p">.</span><span class="nf">log10</span><span class="p">(</span><span class="n">pot_sizes</span><span class="p">).</span><span class="nf">to_frame</span><span class="p">().</span><span class="nf">hist</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">ec</span><span class="o">=</span><span class="s">'white'</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nf">set_title</span><span class="p">(</span><span class="s">'log(pot size) distribution'</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nf">set_ylabel</span><span class="p">(</span><span class="s">'Number of hands'</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nf">set_xlabel</span><span class="p">(</span><span class="s">'log(Big blinds)'</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="p">.</span><span class="nf">suptitle</span><span class="p">(</span><span class="s">'Median pot size is about 10^1.5 ~ 31 x BB'</span><span class="p">)</span>
+
+</code></pre></div></div>
+<p><img src="/assets/images/posts/pokernow/img1-potsize.png" alt=""></p>
+
+<p>The left chart (raw pot sizes) shows that the distribution is heavily skewed. It’s easier to use log of pot size (right chart) and see that the median pot value is around 30x BB (~10**1.5)</p>
+
+<h4 id="at-which-phases-are-the-hands-won">At which phases are the hands won?</h4>
+
+<pre><code class="language-python3">fig, ax = plt.subplots()
+ax.clear()
+df.loc[df['action']=='Won'].groupby('hand_id')['phase'].max().value_counts(dropna=False, ascending=True).plot(ax=ax, kind='barh', width=1, ec='white')
+ax.set_title('At which phases are hands won?')
+ax.set_ylabel('Phase')
+ax.set_xlabel('Number of hands')
+</code></pre>
+
+<p><img src="/assets/images/posts/pokernow/img7-phase.png" alt=""></p>
+
+<p>Judging from the result, we can conclude that the game was pretty casual as it often went to River. My hypothesis is that good players have better evaluation of their hands strength, hence they can make decisions earlier (eg. folding earlier). Meanwhile, at a lower stake game, player don’t lose much in terms of dollar value hence it’s ok to commit to the hand for longer.</p>
+
+<p>We can verify this by comparing hand end phase vs. a higher stake game.</p>
+
+<h3 id="players-behaviors">Player’s behaviors</h3>
+
+<p>Next we analyze player’s behavior, which is the goal of the analysis. Though the raw file contains all the information we need, we it needs some processing before we can find any insights.</p>
+
+<ol>
+  <li>Player names can be matched with Regex pattern <code class="language-plaintext highlighter-rouge">" (.+) @ [A-Za-z0-9\-]"</code>
+</li>
+  <li>Possible actions are <code class="language-plaintext highlighter-rouge">posts a small/big blind</code>, <code class="language-plaintext highlighter-rouge">folds</code>, <code class="language-plaintext highlighter-rouge">calls</code>, <code class="language-plaintext highlighter-rouge">checks</code>, <code class="language-plaintext highlighter-rouge">bets</code>, <code class="language-plaintext highlighter-rouge">raises</code>
+</li>
+  <li>To identify player’s VPIP (Voluntary Put money In Pot) and PFR (Pre-flop Raises), we will need to distinguish between voluntary action (bets/raises/calls) vs non-voluntary actions (blinds/checks) which say nothing about the player’s choice.</li>
+</ol>
+
+<p>The full data prepocessing can be found in <a href="https://github.com/dobeok/analyze-pokernow-games/blob/main/B-game-play/analyze.ipynb">this notebook</a></p>
+
+<h4 id="overview--number-of-hands-played-winnings-win-per-hand">Overview:  Number of hands played, Winnings, Win per hand</h4>
+
+<p>By itself number of hands played only shows how many hands the players sit in. But will be useful to calculate the various playstyle metrics below.</p>
+
+<p>We can make a reasonable assumption that, given enough hands, the better players win more. Next we will analyse different patterns of behaviors. Hopefully we can learn from the winners here.</p>
+
+<pre><code class="language-python3"># pl = player dataframe to store all metrics
+pl = df.loc[(df['phase']=='Pre-flop') &amp; (df['rank-P0']==1)]['player_name'].value_counts(dropna=False).to_frame(name='num_hands_played')
+_expenses = df.groupby('player_name')['put_in'].sum()
+_expenses.name = 'total_expenses'
+
+
+_income = df.loc[df['action']=='Won'].groupby('player_name')['_amount'].sum().sort_values()
+_income.name = 'total_income'
+
+pl = pl.merge(_income, left_index=True, right_index=True)
+pl = pl.merge(_expenses, left_index=True, right_index=True)
+
+pl['win/hand'] = (pl['total_income'] - pl['total_expenses']) / pl['num_hands_played']
+
+pl.sort_values(by='win/hand', ascending=False).head(5)
+
+fig2, axes = plt.subplots(1, 3, figsize=(12, 3.5), sharey=True)
+pl = pl.sort_values(by='num_hands_played')
+pl15 = pl[-15:]
+pl15['num_hands_played'].plot(ax=axes[0], title='Num hands played', kind='barh', width=1, ec='white')
+(pl15['total_income'] - pl15['total_expenses']).plot(ax=axes[1], title='Net win (no. of BB)', kind='barh', ec='white', width=1)
+pl15['win/hand'].plot(ax=axes[2], title='Win per hand (no of. BB)', kind='barh', ec='white', width=1)
+axes[0].set_ylabel('player id')
+</code></pre>
+<p><img src="/assets/images/posts/pokernow/img4-player-overview.png" alt=""></p>
+
+<p>From this chart we can see that ..6efd2f is a good player. We should try to find out how he/she plays!</p>
+
+<h4 id="vpip-voluntarily-put-in-pot--pfr-pre-flop-raises">VPIP: Voluntarily Put In Pot &amp; PFR: Pre-flop Raises</h4>
+
+<p>VPIP tracks the percentage of hands in which a particular player voluntarily puts money into the pot preflop. VPIP increases when a player could fold but instead commits money to the pot preflop. This includes limping (merely calling the big blind), calling, and raising.</p>
+
+<p>PFR tracks the percentage of hands in which a particular player makes a preflop raise when having the opportunity to fold or call instead. This includes reraises. By definition, PFR is a subset of VPIP. So we will plot the ratio PFR/VPIP to measure player’s tendency.</p>
+
+<p><img src="/assets/images/posts/pokernow/img5-vpip-reg.png" alt=""></p>
+
+<p><img src="/assets/images/posts/pokernow/img6-pfr-reg.png" alt=""></p>
+
+<p>It’s clearer now that the winning players play fewer hands (lower % VPIP). But when they play, they are more aggressive with raisings!</p>
+
+<h3 id="takeaways">Takeaways</h3>
+
+<ul>
+  <li>
+    <p>Some of the results are not surprising based on common knowledge (play fewer hands, and more aggressive). However, it’s one thing to read and memorize the theory. But to see how the game plays out really convinced me to adjust my game and hopefully obtain better results.</p>
+  </li>
+  <li>
+    <p>Since our games are casual and not meant to make money, I expect most of my friends to not stick strictly to the theoretically correct way of playing. Hence, only aggregating the data as above might not be the best method. Instead, I can also identify the biggest pots played and analyze them more closely. This will definitely contain more useful insights into each player’s playstyle.</p>
+  </li>
+</ul>
+
+<h3 id="end">End</h3>
+
+
+    </div>
+
+</article>
+<!--<div class="post-nav"><a class="previous" href="/jekyll-theme-yat/2022/08/05/cohort-retention.html" title="Cohort and Retention analysis">Cohort and Retention analysis</a><a class="next" href="/jekyll-theme-yat/2022/09/25/askreddit-topic-similarity.html" title="Finding the most similar questions on r/AskReddit">Finding the most similar questions on...</a></div>-->
+    
+    <!-- back url at the bottom of the post-->
+  
+    <a href="https://dobeok.github.io/" title="" style="font-size:140%"><i class="fa fa-home"></i> Home</a>
+    <!--<div class="post-related">
+      <div>Related Articles</div>
+      <ul>
+        <li><a class="post-link" href="/jekyll-theme-yat/2022/08/05/cohort-retention.html" title="Finding the most similar questions on r/AskReddit">Cohort and Retention analysis</a></li><li><a class="post-link" href="/jekyll-theme-yat/2023/02/15/guess-digits.html" title="Finding the most similar questions on r/AskReddit">Guessing user drawn digit</a></li><li><a class="post-link" href="/jekyll-theme-yat/2022/09/29/sim-queue.html" title="Finding the most similar questions on r/AskReddit">Simulating a queue system</a></li><li><a class="post-link" href="/jekyll-theme-yat/2020/09/12/choropleth-map.html" title="Finding the most similar questions on r/AskReddit">Creating choropleth map with geopandas and matplotlib</a></li></ul>
+    </div>--><!--<div class="post-comments"></div>-->
+
+  </section>
+</div>
+
+
+  </section>
+  <section class="sidebar" style="margin-left: 15px;">
+    <!-- Get sidebar items --><style type="text/css" media="screen">
+.post-menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+</style>
+
+<div class="post-menu">
+  <div class="post-menu-title">Contents</div>
+  <div class="post-menu-content"></div>
+</div>
+
+<script>
+  function generateContent() {
+    var menu = document.querySelector(".post-menu");
+    var menuContent =  menu.querySelector(".post-menu-content");
+    var headings = document.querySelector(".post-content").querySelectorAll("h2, h3, h4, h5, h6");
+
+    // Hide menu when no headings
+    if (headings.length === 0) {
+      return menu.style.display = "none";
+    }
+
+    // Generate post menu
+    var menuHTML = '';
+    for (var i = 0; i < headings.length; i++) {
+      var h = headings[i];
+      menuHTML += (
+        '<li class="h-' + h.tagName.toLowerCase() + '">'
+        + '<a href="#h-' + h.getAttribute('id') + '">' + h.textContent + '</a></li>');
+    }
+
+    menuContent.innerHTML = '<ul>' + menuHTML + '</ul>';
+
+    // The header element
+    var header = document.querySelector('header.site-header');
+
+    function doMenuCollapse(index, over_items) {
+      var items = menuContent.firstChild.children;
+
+      if (over_items == undefined) {
+        over_items = 20;
+      }
+
+      if (items.length < over_items) {
+        return;
+      }
+
+      var activeItem = items[index];
+      var beginItem = activeItem
+      var endItem = activeItem
+      var beginIndex = index;
+      var endIndex = index + 1;
+      while (beginIndex >= 0
+        && !items[beginIndex].classList.contains('h-h2')) {
+        beginIndex -= 1;
+      }
+      while (endIndex < items.length
+        && !items[endIndex].classList.contains('h-h2')) {
+        endIndex += 1;
+      }
+      for (var i = 0; i < beginIndex; i++) {
+        item = items[i]
+        if (!item.classList.contains('h-h2')) {
+          item.style.display = 'none';
+        }
+      }
+      for (var i = beginIndex + 1; i < endIndex; i++) {
+        item = items[i]
+        // if (!item.classList.contains('h-h2')) {
+          item.style.display = '';
+        // }
+      }
+      for (var i = endIndex; i < items.length; i++) {
+        item = items[i]
+        if (!item.classList.contains('h-h2')) {
+          item.style.display = 'none';
+        }
+      }
+    }
+
+    // Init menu collapsed
+    doMenuCollapse(-1);
+
+    // Active the menu item
+    window.addEventListener('scroll', function (event) {
+      var lastActive = menuContent.querySelector('.active');
+      var changed = true;
+      var activeIndex = -1;
+      for (var i = headings.length - 1; i >= 0; i--) {
+        var h = headings[i];
+        var headingRect = h.getBoundingClientRect();
+        var headerRect = header.getBoundingClientRect();
+        var headerTop = Math.floor(headerRect.top);
+        var headerHeight = Math.floor(headerRect.height);
+        var headerHeight = headerTop + headerHeight + 20;
+        if (headingRect.top <= headerHeight) {
+          var id = 'h-' + h.getAttribute('id');
+          var a = menuContent.querySelector('a[href="#' + id  + '"]');
+          var curActive = a.parentNode;
+          if (curActive) {
+            curActive.classList.add('active');
+            activeIndex = i;
+          }
+          if (lastActive == curActive) {
+            changed = false;
+          }
+          break;
+        }
+      }
+      if (changed) {
+        if (lastActive) {
+          lastActive.classList.remove('active');
+        }
+        doMenuCollapse(activeIndex);
+      }
+      event.preventDefault();
+    });
+  }
+  generateContent();
+</script>
+</section>
+</div>
+
+
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/jekyll-theme-yat/"></data>
+
+  <div class="wrapper">
+    <div class="site-footer-inner">
+<div>
+<span class="copyleft">©</span> 2020-2023 Vo Duy Do</div>
+      <div>
+<a href="https://github.com/dobeok" target="_blank">My Github </a> | <a href="/about">About Me</a>
+</div>
+      <!-- <div>Powered by <a title="Jekyll is a simple, blog-aware, static site
+      generator." href="https://jekyllrb.com/">Jekyll</a> &amp; <a title="Yat, yet
+      another theme." href="https://github.com/jeffreytse/jekyll-theme-yat">Yat Theme</a>.</div>
+      <div class="footer-col rss-subscribe">Subscribe <a href="/jekyll-theme-yat/feed.xml">via RSS</a></div> -->
+    </div>
+  </div>
+</footer>
+</body>
+</html>

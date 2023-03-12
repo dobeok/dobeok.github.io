@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="google-translate-customization" content="108d9124921d80c3-80e20d618ff053c8-g4f02ec6f3dba68b7-c">
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Finding the most similar questions on r/AskReddit | My data science projects</title>
+<meta name="generator" content="Jekyll v4.3.2">
+<meta property="og:title" content="Finding the most similar questions on r/AskReddit">
+<meta name="author" content="Vo Duy Do">
+<meta property="og:locale" content="en_US">
+<meta name="description" content="r/AskReddit is a popular subreddit where users can submit open-ended questions. In this analysis, I analyze the top 1,000 questions and find those that are most similar. The resulting technique can be applied to recommending similar questions to increase engagement, or identifying reposted questions">
+<meta property="og:description" content="r/AskReddit is a popular subreddit where users can submit open-ended questions. In this analysis, I analyze the top 1,000 questions and find those that are most similar. The resulting technique can be applied to recommending similar questions to increase engagement, or identifying reposted questions">
+<link rel="canonical" href="https://dobeok.github.io//jekyll-theme-yat/2022/09/25/askreddit-topic-similarity.html">
+<meta property="og:url" content="https://dobeok.github.io//jekyll-theme-yat/2022/09/25/askreddit-topic-similarity.html">
+<meta property="og:site_name" content="My data science projects">
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2022-09-25T05:00:00+00:00">
+<meta name="twitter:card" content="summary">
+<meta property="twitter:title" content="Finding the most similar questions on r/AskReddit">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Vo Duy Do"},"dateModified":"2022-09-25T05:00:00+00:00","datePublished":"2022-09-25T05:00:00+00:00","description":"r/AskReddit is a popular subreddit where users can submit open-ended questions. In this analysis, I analyze the top 1,000 questions and find those that are most similar. The resulting technique can be applied to recommending similar questions to increase engagement, or identifying reposted questions","headline":"Finding the most similar questions on r/AskReddit","mainEntityOfPage":{"@type":"WebPage","@id":"https://dobeok.github.io//jekyll-theme-yat/2022/09/25/askreddit-topic-similarity.html"},"url":"https://dobeok.github.io//jekyll-theme-yat/2022/09/25/askreddit-topic-similarity.html"}</script>
+<!-- End Jekyll SEO tag -->
+<!-- <link rel="shortcut icon" href="https://dobeok.github.io//jekyll-theme-yat/favicon.ico" /> -->
+  <link rel="icon" href="/assets/images/icon.svg">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-noto-sans@0.0.72/index.min.css">
+  
+  
+  <link rel="stylesheet" href="/jekyll-theme-yat/assets/css/main.css">
+  <script src="/jekyll-theme-yat/assets/js/main.js"></script><link type="application/atom+xml" rel="alternate" href="https://dobeok.github.io//jekyll-theme-yat/feed.xml" title="My data science projects">
+<script>
+  function initGoogleAnalytics() {
+    var doNotTrack = (window.doNotTrack === "1" || navigator.doNotTrack === "1" ||
+      navigator.doNotTrack === "yes" || navigator.msDoNotTrack === "1");
+    var enableDNT = "true" == "true";
+
+    if (!enableDNT || !doNotTrack) {
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'G-13G9T0DNE2', 'auto');
+      ga('send', 'pageview');
+    }
+  }
+  window.addEventListener("load", initGoogleAnalytics);
+</script>
+
+<!-- <link rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/default.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js"></script> -->
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/base16/material.min.css">
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+
+
+
+
+<!-- and it's easy to individually load additional languages -->
+<script charset="UTF-8" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/languages/go.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+// Init highlight js
+document.addEventListener('DOMContentLoaded', function(event) {
+  var els = document.querySelectorAll('pre code')
+
+  function addLangData(block) {
+    var outer = block.parentElement.parentElement.parentElement;
+    var lang = block.getAttribute('data-lang');
+    for (var i = 0; i < outer.classList.length; i++) {
+      var cls = outer.classList[i];
+      if (cls.startsWith('language-')) {
+        lang = cls;
+        break;
+      }
+    }
+    if (!lang) {
+      cls = block.getAttribute('class');
+      lang = cls ? cls.replace('hljs ', '') : '';
+    }
+    if (lang.startsWith('language-')) {
+      lang = lang.substr(9);
+    }
+    block.setAttribute('class', 'hljs ' + lang);
+    block.parentNode.setAttribute('data-lang', lang);
+  }
+
+  function addBadge(block) {
+    var enabled = ('true' || 'true').toLowerCase();
+    if (enabled == 'true') {
+      var pre = block.parentElement;
+      pre.classList.add('badge');
+    }
+  }
+
+  function handle(block) {
+    addLangData(block);
+    addBadge(block)
+    hljs.highlightBlock(block);
+  }
+
+  for (var i = 0; i < els.length; i++) {
+    var el = els[i];
+    handle(el);
+  }
+});
+</script>
+
+<style>
+  /* code language badge */
+  pre.badge::before {
+    content: attr(data-lang);
+    /* color: #f0f0f0; */
+    color: #fff;
+    /* background-color: #ff4e00; */
+    background-color: #000000 ;
+    padding: 0 .5em;
+    border-radius: 0 2px;
+    text-transform: uppercase;
+    text-align: center;
+    min-width: 32px;
+    display: inline-block;
+    position: absolute;
+    right: 0;
+  }
+
+  /* fix wrong badge display for firefox browser */
+  code > table pre::before {
+    display: none;
+  }
+</style>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-13G9T0DNE2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-13G9T0DNE2');
+</script>
+</head>
+<body>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<header class="site-header " role="banner">
+
+  <div class="wrapper">
+    <div class="site-header-inner">
+<span class="site-brand"><a class="site-brand-inner" rel="author" href="/jekyll-theme-yat/">
+  <img class="site-favicon" title="My data science projects" src="/assets/images/icon.svg" onerror="this.style.display='none'">
+  My data science projects
+  <!-- left hand side favicon and title - optional - I removed to clean up -->
+</a>
+</span><nav class="site-nav">
+          <input type="checkbox" id="nav-trigger" class="nav-trigger">
+          <label for="nav-trigger">
+            <span class="menu-icon">
+              <svg viewbox="0 0 18 15" width="18px" height="15px">
+                <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"></path>
+              </svg>
+            </span>
+          </label>
+
+          <div class="trigger">
+<a class="page-link" href="/jekyll-theme-yat/">Home</a><a class="page-link" href="/jekyll-theme-yat/about.html">About Me</a><!--
+
+
+
+
+
+
+
+
+
+<span class="page-link">
+
+
+
+<div id="google_translate_element" style="display: none;">
+</div>
+
+<span class="ct-language">
+  <ul class="list-unstyled ct-language-dropdown">
+    
+      <li>
+        <a href="#" class="lang-select" data-lang="en">
+          
+          <img src="https://cdn.countryflags.com/thumbs/united-states-of-america/flag-400.png" title="English">
+          
+        </a>
+      </li>
+    
+      <li>
+        <a href="#" class="lang-select" data-lang="vi">
+          
+          <img src="https://cdn.countryflags.com/thumbs/vietnam/flag-400.png" title="Vietnamese">
+          
+        </a>
+      </li>
+    
+  </ul>
+</span>
+
+<script type="text/javascript">
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({
+    pageLanguage: 'en',
+    autoDisplay: false,
+    layout: google.translate.TranslateElement.InlineLayout.VERTICAL
+  }, 'google_translate_element');
+
+  // Links to cross-origin destinations are unsafe
+  var gll = document.getElementsByClassName('goog-logo-link')[0];
+  if (gll) {
+    gll.setAttribute('rel', 'noopener');
+  }
+
+  function restoreLang() {
+    var iframe = document.getElementsByClassName('goog-te-banner-frame')[0];
+    if (!iframe) return;
+
+    var innerDoc = iframe.contentDocument || iframe.contentWindow.document;
+    var restore_el = innerDoc.getElementsByTagName("button");
+
+    for (var i = 0; i < restore_el.length; i++) {
+      if (restore_el[i].id.indexOf("restore") >= 0) {
+        restore_el[i].click();
+        var close_el = innerDoc.getElementsByClassName("goog-close-link");
+        close_el[0].click();
+        return;
+      }
+    }
+  }
+
+  function triggerHtmlEvent(element, eventName) {
+    var event;
+    if (document.createEvent) {
+      event = document.createEvent('HTMLEvents');
+      event.initEvent(eventName, true, true);
+      element.dispatchEvent(event);
+    } else {
+      event = document.createEventObject();
+      event.eventType = eventName;
+      element.fireEvent('on' + event.eventType, event);
+    }
+  }
+
+  var googleCombo = document.querySelector("select.goog-te-combo");
+  var langSelect = document.querySelector('.ct-language');
+  langSelect.addEventListener('click', function(event) {
+    if (!event.target) {
+      return;
+    }
+
+    var selected = document.querySelector('.ct-language .ct-language-selected');
+    if (selected) {
+      selected.classList.remove('ct-language-selected');
+    }
+
+    var target = event.target;
+    while (target && target !== langSelect ) {
+      if (target.matches('.lang-select')) {
+        break;
+      }
+      target = target.parentElement;
+    }
+
+    if (target && target.matches('.lang-select')) {
+      var lang = target.getAttribute('data-lang');
+      if (googleCombo.value == lang) {
+        restoreLang();
+      } else {
+        target.parentElement.classList.add('ct-language-selected');
+        googleCombo.value = lang;
+        triggerHtmlEvent(googleCombo, 'change');
+      }
+    }
+
+    event.preventDefault();
+  });
+}
+</script>
+
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+</span> -->
+</div>
+        </nav>
+</div>
+  </div>
+</header>
+
+<script>
+  function initHeader() {
+    var lastScrollY = getScrollPos().y;
+    var documentElement = document.documentElement;
+
+    function storeScrollData() {
+      var y = getScrollPos().y;documentElement.setAttribute("data-header-transparent", "");var scrollStatus = "";
+
+      if (y <= 0) {
+        scrollStatus = "top";
+      } else if ((window.innerHeight + y) >= document.body.offsetHeight) {
+        scrollStatus = "bottom";
+      } else {
+        var isScrollDown = (y - lastScrollY > 0) ? true : false;
+        scrollStatus = isScrollDown ? "down" : "up";
+      }
+
+      lastScrollY = y;
+      documentElement.setAttribute("data-scroll-status", scrollStatus);
+    }
+
+    window.addEventListener('scroll', function(e) {
+      storeScrollData();
+    });
+
+    storeScrollData();
+  }
+  document.addEventListener('DOMContentLoaded', initHeader);
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+  function hashLocate(hashValue) {
+    hashValue = hashValue.replace(/^.*#h-/, '');
+    hashValue = decodeURIComponent(hashValue);
+    var element = document.getElementById(hashValue);
+
+    if (!element) {
+      return;
+    }
+
+    var header = document.querySelector('header.site-header');
+    var headerRect = header.getBoundingClientRect();
+    var headerTop = Math.floor(headerRect.top);
+    var headerHeight = Math.floor(headerRect.height);
+    var scrollPos = getScrollPos();
+    var offsetY = element.offsetTop - (headerTop + headerHeight + 20);
+
+    if (offsetY == scrollPos.y) {
+      return;
+    }
+
+    if (headerTop == 0  && offsetY > scrollPos.y) {
+      offsetY += headerHeight + 2;
+    } else if (headerTop < 0  && offsetY < scrollPos.y) {
+      offsetY -= headerHeight - 2;
+    }
+
+    smoothScrollTo(offsetY);
+  }
+
+  // The first event occurred
+  window.addEventListener('load', function(event) {
+    if (window.location.hash) {
+      hashLocate(window.location.hash);
+    }
+  });
+
+  // The first event occurred
+  window.addEventListener('click', function(event) {
+    if (event.target.tagName.toLowerCase() == 'a') {
+      hashLocate(event.target.getAttribute('href'));
+    }
+  });
+</script>
+<!--<div class="theme-toggle">
+  <input type="checkbox" id="theme-switch">
+  <label for="theme-switch">
+    <div class="toggle"></div>
+    <div class="names">
+      <p class="light">Light</p>
+      <p class="dark">Dark</p>
+    </div>
+  </label>
+</div>
+
+
+
+
+<script>
+  (function() {
+    var sw = document.getElementById('theme-switch');
+    var html = document.getElementsByTagName('html')[0];
+    var nightModeOption = ('off' || 'auto').toLowerCase();
+    var storage = nightModeOption === 'manual'
+        ? localStorage
+        : sessionStorage;
+    var themeData = loadThemeData();
+
+    function saveThemeData(data) {
+      storage.setItem('theme', JSON.stringify(data));
+    }
+
+    function loadThemeData() {
+      var data = storage.getItem('theme');
+      try {
+        data = JSON.parse(data ? data : '');
+      } catch(e) {
+        data = { nightShift: undefined, autoToggleAt: 0 };
+        saveThemeData(data);
+      }
+      return data;
+    }
+
+    function handleThemeToggle(nightShift) {
+      themeData.nightShift = nightShift;
+      saveThemeData(themeData);
+      html.dataset.theme = nightShift ? 'dark' : 'light';
+      setTimeout(function() {
+        sw.checked = nightShift ? true : false;
+      }, 50);
+    }
+
+    function autoThemeToggle() {
+      // Next time point of theme toggle
+      var now = new Date();
+      var toggleAt = new Date();
+      var hours = now.getHours();
+      var nightShift = hours >= 19 || hours <=7;
+
+      if (nightShift) {
+        if (hours > 7) {
+          toggleAt.setDate(toggleAt.getDate() + 1);
+        }
+        toggleAt.setHours(7);
+      } else {
+        toggleAt.setHours(19);
+      }
+
+      toggleAt.setMinutes(0);
+      toggleAt.setSeconds(0);
+      toggleAt.setMilliseconds(0)
+
+      var delay = toggleAt.getTime() - now.getTime();
+
+      // auto toggle theme mode
+      setTimeout(function() {
+        handleThemeToggle(!nightShift);
+      }, delay);
+
+      return {
+        nightShift: nightShift,
+        toggleAt: toggleAt.getTime()
+      };
+    }
+
+    // Listen the theme toggle event
+    sw.addEventListener('change', function(event) {
+      handleThemeToggle(event.target.checked);
+    });
+
+    if (nightModeOption == 'auto') {
+      var data = autoThemeToggle();
+
+      // Toggle theme by local setting
+      if (data.toggleAt > themeData.autoToggleAt) {
+        themeData.autoToggleAt = data.toggleAt;
+        handleThemeToggle(data.nightShift);
+      } else {
+        handleThemeToggle(themeData.nightShift);
+      }
+    } else if (nightModeOption == 'manual') {
+      handleThemeToggle(themeData.nightShift);
+    } else {
+      var nightShift = themeData.nightShift;
+      if (nightShift === undefined) {
+        nightShift = nightModeOption === 'on';
+      }
+      handleThemeToggle(nightShift);
+    }
+  })();
+</script>
+--><div id="click-to-top" class="click-to-top">
+  <i class="fa fa-arrow-up"></i>
+</div>
+<script>
+  (function () {
+    const clickToTop = document.getElementById('click-to-top');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 100) {
+        clickToTop.classList.add('show')
+      }else {
+        clickToTop.classList.remove('show')
+      }
+    });
+    clickToTop.addEventListener('click', () => {
+      window.smoothScrollTo(0);
+    });
+  })();
+</script>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <div class="framework">
+  <section class="main">
+
+     <br>
+<div class="post">
+  <section>
+    
+    <!-- custom title in each post  -->
+    <p style="color:black;font-weight:bold;font-size:180%;">Finding the most similar questions on r/AskReddit</p>
+    <hr>
+
+
+
+
+
+
+
+
+
+<article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+    <div class="post-content e-content" itemprop="articleBody">
+
+      <h3 id="introduction">Introduction</h3>
+
+<p>In <a href="https://www.reddit.com/r/AskReddit/">r/AskReddit</a>, users can submit open-ended questions to which other users can then reply with answers. The subreddit describes its focus as “to ask and answer questions that elicit thought-provoking discussions”. It has been one of the most popular subreddits on Reddit.</p>
+
+<p>In this post, I will analyze the top 1,000 questions from r/askreddit and threads that are most similar to each other. This technique can be used for a few purposes:</p>
+<ol>
+  <li>Recommend similar questions to the one that a user is reading in order to increase user engagement</li>
+  <li>Identify reposted questions, which is undesirable user experience for readers</li>
+  <li>Outside of forums, this can also be used in news site. Publishers can show relevant news pieces about a particular topic that the user is reading</li>
+</ol>
+
+<p align="center">
+  <img alt="img-name" src="/assets/images/posts/askreddit-similar/askreddit.jpg">
+    <em>Top posts of the year</em>
+</p>
+
+<h3 id="methodology">Methodology</h3>
+
+<p>I fetched <a href="https://github.com/dobeok/askreddit-topic-similarity/blob/b046dc6c9cb1274337f6c38b6c7033bb345303d4/data/1000posts.txt">1,000</a> highest rated questions in the month. These rankings are based on users upvotes.</p>
+
+<iframe frameborder="0" style="min-width: 200px; width: 100%; height: 460px;" scrolling="no" seamless="seamless" srcdoc='&lt;html&gt;&lt;body&gt;&lt;style type="text/css"&gt;.gist .gist-data { height: 350px; }&lt;/style&gt;&lt;script src="https://gist.github.com/dobeok/35f28b7d3fe7062692f055653306e1f4.js"&gt;&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;'></iframe>
+
+<p><strong>Step-by-step data processing</strong></p>
+
+<ol>
+  <li>Remove english stop words. Common words such as ‘the’, ‘and’, ‘I’ appear frequently but by themselves don’t convey insight into the topic of the question. We want to remove them so that they won’t inflate our similarity scores.</li>
+  <li>Stem words using nltk (removing plurals, stemming verbs in different tenses, etc).</li>
+  <li>Convert raw text string to vector using bag-of-word method, using term frequency - inverse document frequency (TF-IDF) method.</li>
+  <li>Use cosine similarity metric to find the closest matching thread name.
+    <ul>
+      <li>Similarity score ranges from 0 to 1 with 1 being an exact match.</li>
+      <li>Note that due to our preprocessing above, questions that are originally slightly different may still have a score of 1</li>
+      <li>The dimension of the output is a 1,000 x 1,000 dataframe where each row and each column represent a question. For each row, our goal is to find the column index containing the highest score. Note that, in the main diagonal, values will always be 1 because it’s the row and column are representing the same question. To prevent this, we will set the main diagonal of the matrix to 0 using <code class="language-plaintext highlighter-rouge">np.fill_diagonal</code>
+</li>
+    </ul>
+  </li>
+</ol>
+
+<h3 id="results-and-observations">Results and Observations</h3>
+<ul>
+  <li>Thread names are usually short. Therefore using raw word count will yield higher similarity score than tf-idf because of common phrases that are not filted as stop words (eg. what, you(r), etc.)</li>
+  <li>tf-idf works slightly better because rarer topics can be matched</li>
+</ul>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: right"> </th>
+      <th style="text-align: left">original thread name</th>
+      <th style="text-align: left">best match</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: right">0</td>
+      <td style="text-align: left">What would you do if you woke up in the 80’s?</td>
+      <td style="text-align: left">What’s your favorite 80’s movie?</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">1</td>
+      <td style="text-align: left">What is your strange turn-on?</td>
+      <td style="text-align: left">what’s the weirdest thing that’s turned you on?</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">2</td>
+      <td style="text-align: left">What’s worse than a wet handshake?</td>
+      <td style="text-align: left">What is 100% worse when wet?</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">3</td>
+      <td style="text-align: left">Zoo workers of reddit, what is the dumbest thing someone has asked about an animal?</td>
+      <td style="text-align: left">What’s the dumbest thing you believed as a child?</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">4</td>
+      <td style="text-align: left">What is your favorite bromance in fiction?</td>
+      <td style="text-align: left">Who is your favorite fictional doctor?</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">5</td>
+      <td style="text-align: left">Women of reddit, whats the stupidest excuse a man has ever given you to not wear a condom?</td>
+      <td style="text-align: left">Women of reddit, what is the grossest thing a man has said to you?</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">6</td>
+      <td style="text-align: left">The world is now under the iron fist of Canada. What changes?</td>
+      <td style="text-align: left">What is the most disturbing fact you know about Canada?</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">7</td>
+      <td style="text-align: left">what’s a song that everybody knows?</td>
+      <td style="text-align: left">What do you hate that everybody seems to love?</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">8</td>
+      <td style="text-align: left">When it comes to dating apps, what is an automatic “pass” for you?</td>
+      <td style="text-align: left">WWhat must one never do on a first date?</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">9</td>
+      <td style="text-align: left">Who’s someone you looked up to or idolized as a kid that you now can’t stand?</td>
+      <td style="text-align: left">Who is a famous singer that you cannot stand their singing voice?</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="takeaways">Takeaways</h3>
+
+<p align="center">
+  <img alt="img-name" src="/assets/images/posts/askreddit-similar/posts-per-day.png">
+    <em>Number of daily posts on r/AskReddit, retrieved on 10 Sep 2022. <a href="https://subredditstats.com/r/askreddit">Source: subredditstats.com</a></em>
+</p>
+
+<ul>
+  <li>In this post I only compared data from a group of 1,000 posts, which is not a big number compared to the averaged more than 6,000 posts <strong>per day</strong>. This is a limit from PRAW. I can potentially look for alternative sources that archive reddit posts and do an offline analysis (for exammple: monthly data). With more data points, the matching process will most likely improve.</li>
+  <li>Some of the matches found are not strictly accurate (potentially due to lacking of similar questions), but interesting. As a owner, I think this algo strike a good balance between producing good enough results and being simple to implement.</li>
+</ul>
+
+<h3 id="the-full-code">The full code</h3>
+
+<pre><code class="language-python3">from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from nltk.stem.snowball import SnowballStemmer
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+plt.style.use('fivethirtyeight')
+pd.set_option('display.max_colwidth', 500)
+
+np.random.seed(9) # to fix sampled data
+
+
+orig_corpus = []
+with open('data/1000posts.txt') as file:
+    for line in file:
+        orig_corpus.append(line.replace('\n', ''))
+
+
+stemmer = SnowballStemmer('english')
+
+
+def stem_tokens(text):
+    text = text.strip()
+    words = text.lower().split()
+    words = [stemmer.stem(word) for word in words]
+    return ' '.join(words)
+
+
+corpus = [stem_tokens(_) for _ in orig_corpus]
+
+# thread1: orignal list of thread name
+# sim-tf: closest match, using term frequency
+# sim-tf-idf: closest mathh, using term frequency - inverse document frequency
+df = pd.DataFrame({
+    'orig_thread': orig_corpus,
+    'stemmed_thread': corpus})
+df.head()
+
+
+# using raw count
+count_vectorizer = CountVectorizer(stop_words='english', min_df=0.005)
+X_count = count_vectorizer.fit_transform(corpus)
+
+# most frequent words
+word_freq = pd.DataFrame({
+    'word': count_vectorizer.get_feature_names_out(),
+    'freq': X_count.toarray().sum(axis=0)
+})
+word_freq_15 = word_freq.sort_values(by='freq', ascending=False).head(15)
+
+# plot
+fig, ax = plt.subplots(figsize=(12, 3))
+ax.bar(
+    x=word_freq_15['word'].values,
+    height=word_freq_15['freq'].values,
+    width=1,
+    ec='white'
+)
+ax.set_title('Top 15 words by count')
+fig.savefig('./assets/top_15.png', bbox_inches='tight')
+
+
+
+df_count = pd.DataFrame(X_count.toarray(), columns=count_vectorizer.get_feature_names_out())
+df_count_sim = pd.DataFrame(cosine_similarity(df_count, dense_output=True))
+df_count_sim_as_np = df_count_sim.values
+
+np.fill_diagonal(df_count_sim_as_np, 0)
+df_count_result = pd.DataFrame(df_count_sim_as_np)
+df_count_result['best_match (count)'] = df_count_result.idxmax()
+df_count_result['similarity (count)'] = df_count_result.max()
+
+count_result = df_count_result[['best_match (count)', 'similarity (count)']]
+df = df.merge(count_result, how='left', left_index=True, right_index=True)
+
+
+
+
+# using tf-idf
+tfidf_vectorizer = TfidfVectorizer(stop_words='english')
+X_tfidf = tfidf_vectorizer.fit_transform(corpus)
+df_tfidf = pd.DataFrame(X_tfidf.toarray(), columns=tfidf_vectorizer.get_feature_names_out())
+
+df_tfidf_sim = pd.DataFrame(cosine_similarity(df_tfidf, dense_output=True))
+df_tfidf_sim_as_np = df_tfidf_sim.values
+
+np.fill_diagonal(df_tfidf_sim_as_np, 0)
+df_tfidf_result = pd.DataFrame(df_tfidf_sim_as_np)
+df_tfidf_result['best_match (tf-idf)'] = df_tfidf_result.idxmax()
+df_tfidf_result['similarity (tf-idf)'] = df_tfidf_result.max()
+
+tfidf_result = df_tfidf_result[['best_match (tf-idf)', 'similarity (tf-idf)']]
+df = df.merge(tfidf_result, how='left', left_index=True, right_index=True)
+
+df['best_match (count)'] = df['best_match (count)'].map(df['orig_thread'].to_dict())
+df['best_match (tf-idf)'] = df['best_match (tf-idf)'].map(df['orig_thread'].to_dict())
+
+# compare
+# random 10
+sample_index = np.random.randint(0, len(corpus), 10)
+
+print(df.loc[sample_index][['orig_thread', 'best_match (count)', 'best_match (tf-idf)']].reset_index().to_markdown())
+
+
+# plot
+bins = [_/10 for _ in range(0, 11)]
+
+fig, ax = plt.subplots()
+ax.clear()
+pd.cut(tfidf_result['similarity'], bins=bins).value_counts().sort_index().plot(ax=ax, kind='bar', width=1, ec='white', alpha=.3, color='#fb553b', label='tf-idf')
+pd.cut(count_result['similarity'], bins=bins).value_counts().sort_index().plot(ax=ax, kind='bar', width=1, ec='white', alpha=.3, label='raw count')
+ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.05), ncol=2)
+fig.savefig('./assets/compare sim score.png', bbox_inches='tight')
+</code></pre>
+
+<h3 id="end">End</h3>
+
+
+    </div>
+
+</article>
+<!--<div class="post-nav"><a class="previous" href="/jekyll-theme-yat/2022/08/20/pokernow.html" title="Analyzing my poker games">Analyzing my poker games</a><a class="next" href="/jekyll-theme-yat/2022/09/29/sim-queue.html" title="Simulating a queue system">Simulating a queue system</a></div>-->
+    
+    <!-- back url at the bottom of the post-->
+  
+    <a href="https://dobeok.github.io/" title="" style="font-size:140%"><i class="fa fa-home"></i> Home</a>
+    <!--<div class="post-related">
+      <div>Related Articles</div>
+      <ul>
+        <li><a class="post-link" href="/jekyll-theme-yat/2022/04/01/DCA-apps.html" title="Simulating a queue system">Building a DCA simulation apps with Streamlit</a></li><li><a class="post-link" href="/jekyll-theme-yat/2020/08/21/estimate-pi.html" title="Simulating a queue system">Estimate pi using Monte Carlo simulation</a></li><li><a class="post-link" href="/jekyll-theme-yat/2022/08/20/pokernow.html" title="Simulating a queue system">Analyzing my poker games</a></li><li><a class="post-link" href="/jekyll-theme-yat/2023/02/23/predict-loan.html" title="Simulating a queue system">Predicting loan defaults</a></li></ul>
+    </div>--><!--<div class="post-comments"></div>-->
+
+  </section>
+</div>
+
+
+  </section>
+  <section class="sidebar" style="margin-left: 15px;">
+    <!-- Get sidebar items --><style type="text/css" media="screen">
+.post-menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+</style>
+
+<div class="post-menu">
+  <div class="post-menu-title">Contents</div>
+  <div class="post-menu-content"></div>
+</div>
+
+<script>
+  function generateContent() {
+    var menu = document.querySelector(".post-menu");
+    var menuContent =  menu.querySelector(".post-menu-content");
+    var headings = document.querySelector(".post-content").querySelectorAll("h2, h3, h4, h5, h6");
+
+    // Hide menu when no headings
+    if (headings.length === 0) {
+      return menu.style.display = "none";
+    }
+
+    // Generate post menu
+    var menuHTML = '';
+    for (var i = 0; i < headings.length; i++) {
+      var h = headings[i];
+      menuHTML += (
+        '<li class="h-' + h.tagName.toLowerCase() + '">'
+        + '<a href="#h-' + h.getAttribute('id') + '">' + h.textContent + '</a></li>');
+    }
+
+    menuContent.innerHTML = '<ul>' + menuHTML + '</ul>';
+
+    // The header element
+    var header = document.querySelector('header.site-header');
+
+    function doMenuCollapse(index, over_items) {
+      var items = menuContent.firstChild.children;
+
+      if (over_items == undefined) {
+        over_items = 20;
+      }
+
+      if (items.length < over_items) {
+        return;
+      }
+
+      var activeItem = items[index];
+      var beginItem = activeItem
+      var endItem = activeItem
+      var beginIndex = index;
+      var endIndex = index + 1;
+      while (beginIndex >= 0
+        && !items[beginIndex].classList.contains('h-h2')) {
+        beginIndex -= 1;
+      }
+      while (endIndex < items.length
+        && !items[endIndex].classList.contains('h-h2')) {
+        endIndex += 1;
+      }
+      for (var i = 0; i < beginIndex; i++) {
+        item = items[i]
+        if (!item.classList.contains('h-h2')) {
+          item.style.display = 'none';
+        }
+      }
+      for (var i = beginIndex + 1; i < endIndex; i++) {
+        item = items[i]
+        // if (!item.classList.contains('h-h2')) {
+          item.style.display = '';
+        // }
+      }
+      for (var i = endIndex; i < items.length; i++) {
+        item = items[i]
+        if (!item.classList.contains('h-h2')) {
+          item.style.display = 'none';
+        }
+      }
+    }
+
+    // Init menu collapsed
+    doMenuCollapse(-1);
+
+    // Active the menu item
+    window.addEventListener('scroll', function (event) {
+      var lastActive = menuContent.querySelector('.active');
+      var changed = true;
+      var activeIndex = -1;
+      for (var i = headings.length - 1; i >= 0; i--) {
+        var h = headings[i];
+        var headingRect = h.getBoundingClientRect();
+        var headerRect = header.getBoundingClientRect();
+        var headerTop = Math.floor(headerRect.top);
+        var headerHeight = Math.floor(headerRect.height);
+        var headerHeight = headerTop + headerHeight + 20;
+        if (headingRect.top <= headerHeight) {
+          var id = 'h-' + h.getAttribute('id');
+          var a = menuContent.querySelector('a[href="#' + id  + '"]');
+          var curActive = a.parentNode;
+          if (curActive) {
+            curActive.classList.add('active');
+            activeIndex = i;
+          }
+          if (lastActive == curActive) {
+            changed = false;
+          }
+          break;
+        }
+      }
+      if (changed) {
+        if (lastActive) {
+          lastActive.classList.remove('active');
+        }
+        doMenuCollapse(activeIndex);
+      }
+      event.preventDefault();
+    });
+  }
+  generateContent();
+</script>
+</section>
+</div>
+
+
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/jekyll-theme-yat/"></data>
+
+  <div class="wrapper">
+    <div class="site-footer-inner">
+<div>
+<span class="copyleft">©</span> 2020-2023 Vo Duy Do</div>
+      <div>
+<a href="https://github.com/dobeok" target="_blank">My Github </a> | <a href="/about">About Me</a>
+</div>
+      <!-- <div>Powered by <a title="Jekyll is a simple, blog-aware, static site
+      generator." href="https://jekyllrb.com/">Jekyll</a> &amp; <a title="Yat, yet
+      another theme." href="https://github.com/jeffreytse/jekyll-theme-yat">Yat Theme</a>.</div>
+      <div class="footer-col rss-subscribe">Subscribe <a href="/jekyll-theme-yat/feed.xml">via RSS</a></div> -->
+    </div>
+  </div>
+</footer>
+</body>
+</html>

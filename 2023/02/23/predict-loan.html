@@ -1,0 +1,2018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="google-translate-customization" content="108d9124921d80c3-80e20d618ff053c8-g4f02ec6f3dba68b7-c">
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Predicting loan defaults | My data science projects</title>
+<meta name="generator" content="Jekyll v4.3.2">
+<meta property="og:title" content="Predicting loan defaults">
+<meta name="author" content="Vo Duy Do">
+<meta property="og:locale" content="en_US">
+<meta name="description" content="Fitting a statistical model to historical credit data and estimate the value of current loans. Along with model building, I will demonstrate the use of sklearn’s Pipeline as a more convenient approach for Feature Enginerring, Cross Validation and Hyperparameters Tuning">
+<meta property="og:description" content="Fitting a statistical model to historical credit data and estimate the value of current loans. Along with model building, I will demonstrate the use of sklearn’s Pipeline as a more convenient approach for Feature Enginerring, Cross Validation and Hyperparameters Tuning">
+<link rel="canonical" href="https://dobeok.github.io//jekyll-theme-yat/2023/02/23/predict-loan.html">
+<meta property="og:url" content="https://dobeok.github.io//jekyll-theme-yat/2023/02/23/predict-loan.html">
+<meta property="og:site_name" content="My data science projects">
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2023-02-23T05:00:00+00:00">
+<meta name="twitter:card" content="summary">
+<meta property="twitter:title" content="Predicting loan defaults">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Vo Duy Do"},"dateModified":"2023-02-23T05:00:00+00:00","datePublished":"2023-02-23T05:00:00+00:00","description":"Fitting a statistical model to historical credit data and estimate the value of current loans. Along with model building, I will demonstrate the use of sklearn’s Pipeline as a more convenient approach for Feature Enginerring, Cross Validation and Hyperparameters Tuning","headline":"Predicting loan defaults","mainEntityOfPage":{"@type":"WebPage","@id":"https://dobeok.github.io//jekyll-theme-yat/2023/02/23/predict-loan.html"},"url":"https://dobeok.github.io//jekyll-theme-yat/2023/02/23/predict-loan.html"}</script>
+<!-- End Jekyll SEO tag -->
+<!-- <link rel="shortcut icon" href="https://dobeok.github.io//jekyll-theme-yat/favicon.ico" /> -->
+  <link rel="icon" href="/assets/images/icon.svg">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-noto-sans@0.0.72/index.min.css">
+  
+  
+  <link rel="stylesheet" href="/jekyll-theme-yat/assets/css/main.css">
+  <script src="/jekyll-theme-yat/assets/js/main.js"></script><link type="application/atom+xml" rel="alternate" href="https://dobeok.github.io//jekyll-theme-yat/feed.xml" title="My data science projects">
+<script>
+  function initGoogleAnalytics() {
+    var doNotTrack = (window.doNotTrack === "1" || navigator.doNotTrack === "1" ||
+      navigator.doNotTrack === "yes" || navigator.msDoNotTrack === "1");
+    var enableDNT = "true" == "true";
+
+    if (!enableDNT || !doNotTrack) {
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'G-13G9T0DNE2', 'auto');
+      ga('send', 'pageview');
+    }
+  }
+  window.addEventListener("load", initGoogleAnalytics);
+</script>
+
+<!-- <link rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/default.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js"></script> -->
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/base16/material.min.css">
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+
+
+
+
+<!-- and it's easy to individually load additional languages -->
+<script charset="UTF-8" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/languages/go.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+// Init highlight js
+document.addEventListener('DOMContentLoaded', function(event) {
+  var els = document.querySelectorAll('pre code')
+
+  function addLangData(block) {
+    var outer = block.parentElement.parentElement.parentElement;
+    var lang = block.getAttribute('data-lang');
+    for (var i = 0; i < outer.classList.length; i++) {
+      var cls = outer.classList[i];
+      if (cls.startsWith('language-')) {
+        lang = cls;
+        break;
+      }
+    }
+    if (!lang) {
+      cls = block.getAttribute('class');
+      lang = cls ? cls.replace('hljs ', '') : '';
+    }
+    if (lang.startsWith('language-')) {
+      lang = lang.substr(9);
+    }
+    block.setAttribute('class', 'hljs ' + lang);
+    block.parentNode.setAttribute('data-lang', lang);
+  }
+
+  function addBadge(block) {
+    var enabled = ('true' || 'true').toLowerCase();
+    if (enabled == 'true') {
+      var pre = block.parentElement;
+      pre.classList.add('badge');
+    }
+  }
+
+  function handle(block) {
+    addLangData(block);
+    addBadge(block)
+    hljs.highlightBlock(block);
+  }
+
+  for (var i = 0; i < els.length; i++) {
+    var el = els[i];
+    handle(el);
+  }
+});
+</script>
+
+<style>
+  /* code language badge */
+  pre.badge::before {
+    content: attr(data-lang);
+    /* color: #f0f0f0; */
+    color: #fff;
+    /* background-color: #ff4e00; */
+    background-color: #000000 ;
+    padding: 0 .5em;
+    border-radius: 0 2px;
+    text-transform: uppercase;
+    text-align: center;
+    min-width: 32px;
+    display: inline-block;
+    position: absolute;
+    right: 0;
+  }
+
+  /* fix wrong badge display for firefox browser */
+  code > table pre::before {
+    display: none;
+  }
+</style>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-13G9T0DNE2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-13G9T0DNE2');
+</script>
+<script>MathJax={"tex":{"inlineMath":[["$","$"],["\\(","\\)"]],"displayMath":[["$$","$$"],["\\[","\\]"]]},"svg":{"fontCache":"global"}}</script><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<header class="site-header " role="banner">
+
+  <div class="wrapper">
+    <div class="site-header-inner">
+<span class="site-brand"><a class="site-brand-inner" rel="author" href="/jekyll-theme-yat/">
+  <img class="site-favicon" title="My data science projects" src="/assets/images/icon.svg" onerror="this.style.display='none'">
+  My data science projects
+  <!-- left hand side favicon and title - optional - I removed to clean up -->
+</a>
+</span><nav class="site-nav">
+          <input type="checkbox" id="nav-trigger" class="nav-trigger">
+          <label for="nav-trigger">
+            <span class="menu-icon">
+              <svg viewbox="0 0 18 15" width="18px" height="15px">
+                <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"></path>
+              </svg>
+            </span>
+          </label>
+
+          <div class="trigger">
+<a class="page-link" href="/jekyll-theme-yat/">Home</a><a class="page-link" href="/jekyll-theme-yat/about.html">About Me</a><!--
+
+
+
+
+
+
+
+
+
+<span class="page-link">
+
+
+
+<div id="google_translate_element" style="display: none;">
+</div>
+
+<span class="ct-language">
+  <ul class="list-unstyled ct-language-dropdown">
+    
+      <li>
+        <a href="#" class="lang-select" data-lang="en">
+          
+          <img src="https://cdn.countryflags.com/thumbs/united-states-of-america/flag-400.png" title="English">
+          
+        </a>
+      </li>
+    
+      <li>
+        <a href="#" class="lang-select" data-lang="vi">
+          
+          <img src="https://cdn.countryflags.com/thumbs/vietnam/flag-400.png" title="Vietnamese">
+          
+        </a>
+      </li>
+    
+  </ul>
+</span>
+
+<script type="text/javascript">
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({
+    pageLanguage: 'en',
+    autoDisplay: false,
+    layout: google.translate.TranslateElement.InlineLayout.VERTICAL
+  }, 'google_translate_element');
+
+  // Links to cross-origin destinations are unsafe
+  var gll = document.getElementsByClassName('goog-logo-link')[0];
+  if (gll) {
+    gll.setAttribute('rel', 'noopener');
+  }
+
+  function restoreLang() {
+    var iframe = document.getElementsByClassName('goog-te-banner-frame')[0];
+    if (!iframe) return;
+
+    var innerDoc = iframe.contentDocument || iframe.contentWindow.document;
+    var restore_el = innerDoc.getElementsByTagName("button");
+
+    for (var i = 0; i < restore_el.length; i++) {
+      if (restore_el[i].id.indexOf("restore") >= 0) {
+        restore_el[i].click();
+        var close_el = innerDoc.getElementsByClassName("goog-close-link");
+        close_el[0].click();
+        return;
+      }
+    }
+  }
+
+  function triggerHtmlEvent(element, eventName) {
+    var event;
+    if (document.createEvent) {
+      event = document.createEvent('HTMLEvents');
+      event.initEvent(eventName, true, true);
+      element.dispatchEvent(event);
+    } else {
+      event = document.createEventObject();
+      event.eventType = eventName;
+      element.fireEvent('on' + event.eventType, event);
+    }
+  }
+
+  var googleCombo = document.querySelector("select.goog-te-combo");
+  var langSelect = document.querySelector('.ct-language');
+  langSelect.addEventListener('click', function(event) {
+    if (!event.target) {
+      return;
+    }
+
+    var selected = document.querySelector('.ct-language .ct-language-selected');
+    if (selected) {
+      selected.classList.remove('ct-language-selected');
+    }
+
+    var target = event.target;
+    while (target && target !== langSelect ) {
+      if (target.matches('.lang-select')) {
+        break;
+      }
+      target = target.parentElement;
+    }
+
+    if (target && target.matches('.lang-select')) {
+      var lang = target.getAttribute('data-lang');
+      if (googleCombo.value == lang) {
+        restoreLang();
+      } else {
+        target.parentElement.classList.add('ct-language-selected');
+        googleCombo.value = lang;
+        triggerHtmlEvent(googleCombo, 'change');
+      }
+    }
+
+    event.preventDefault();
+  });
+}
+</script>
+
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+</span> -->
+</div>
+        </nav>
+</div>
+  </div>
+</header>
+
+<script>
+  function initHeader() {
+    var lastScrollY = getScrollPos().y;
+    var documentElement = document.documentElement;
+
+    function storeScrollData() {
+      var y = getScrollPos().y;documentElement.setAttribute("data-header-transparent", "");var scrollStatus = "";
+
+      if (y <= 0) {
+        scrollStatus = "top";
+      } else if ((window.innerHeight + y) >= document.body.offsetHeight) {
+        scrollStatus = "bottom";
+      } else {
+        var isScrollDown = (y - lastScrollY > 0) ? true : false;
+        scrollStatus = isScrollDown ? "down" : "up";
+      }
+
+      lastScrollY = y;
+      documentElement.setAttribute("data-scroll-status", scrollStatus);
+    }
+
+    window.addEventListener('scroll', function(e) {
+      storeScrollData();
+    });
+
+    storeScrollData();
+  }
+  document.addEventListener('DOMContentLoaded', initHeader);
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+  function hashLocate(hashValue) {
+    hashValue = hashValue.replace(/^.*#h-/, '');
+    hashValue = decodeURIComponent(hashValue);
+    var element = document.getElementById(hashValue);
+
+    if (!element) {
+      return;
+    }
+
+    var header = document.querySelector('header.site-header');
+    var headerRect = header.getBoundingClientRect();
+    var headerTop = Math.floor(headerRect.top);
+    var headerHeight = Math.floor(headerRect.height);
+    var scrollPos = getScrollPos();
+    var offsetY = element.offsetTop - (headerTop + headerHeight + 20);
+
+    if (offsetY == scrollPos.y) {
+      return;
+    }
+
+    if (headerTop == 0  && offsetY > scrollPos.y) {
+      offsetY += headerHeight + 2;
+    } else if (headerTop < 0  && offsetY < scrollPos.y) {
+      offsetY -= headerHeight - 2;
+    }
+
+    smoothScrollTo(offsetY);
+  }
+
+  // The first event occurred
+  window.addEventListener('load', function(event) {
+    if (window.location.hash) {
+      hashLocate(window.location.hash);
+    }
+  });
+
+  // The first event occurred
+  window.addEventListener('click', function(event) {
+    if (event.target.tagName.toLowerCase() == 'a') {
+      hashLocate(event.target.getAttribute('href'));
+    }
+  });
+</script>
+<!--<div class="theme-toggle">
+  <input type="checkbox" id="theme-switch">
+  <label for="theme-switch">
+    <div class="toggle"></div>
+    <div class="names">
+      <p class="light">Light</p>
+      <p class="dark">Dark</p>
+    </div>
+  </label>
+</div>
+
+
+
+
+<script>
+  (function() {
+    var sw = document.getElementById('theme-switch');
+    var html = document.getElementsByTagName('html')[0];
+    var nightModeOption = ('off' || 'auto').toLowerCase();
+    var storage = nightModeOption === 'manual'
+        ? localStorage
+        : sessionStorage;
+    var themeData = loadThemeData();
+
+    function saveThemeData(data) {
+      storage.setItem('theme', JSON.stringify(data));
+    }
+
+    function loadThemeData() {
+      var data = storage.getItem('theme');
+      try {
+        data = JSON.parse(data ? data : '');
+      } catch(e) {
+        data = { nightShift: undefined, autoToggleAt: 0 };
+        saveThemeData(data);
+      }
+      return data;
+    }
+
+    function handleThemeToggle(nightShift) {
+      themeData.nightShift = nightShift;
+      saveThemeData(themeData);
+      html.dataset.theme = nightShift ? 'dark' : 'light';
+      setTimeout(function() {
+        sw.checked = nightShift ? true : false;
+      }, 50);
+    }
+
+    function autoThemeToggle() {
+      // Next time point of theme toggle
+      var now = new Date();
+      var toggleAt = new Date();
+      var hours = now.getHours();
+      var nightShift = hours >= 19 || hours <=7;
+
+      if (nightShift) {
+        if (hours > 7) {
+          toggleAt.setDate(toggleAt.getDate() + 1);
+        }
+        toggleAt.setHours(7);
+      } else {
+        toggleAt.setHours(19);
+      }
+
+      toggleAt.setMinutes(0);
+      toggleAt.setSeconds(0);
+      toggleAt.setMilliseconds(0)
+
+      var delay = toggleAt.getTime() - now.getTime();
+
+      // auto toggle theme mode
+      setTimeout(function() {
+        handleThemeToggle(!nightShift);
+      }, delay);
+
+      return {
+        nightShift: nightShift,
+        toggleAt: toggleAt.getTime()
+      };
+    }
+
+    // Listen the theme toggle event
+    sw.addEventListener('change', function(event) {
+      handleThemeToggle(event.target.checked);
+    });
+
+    if (nightModeOption == 'auto') {
+      var data = autoThemeToggle();
+
+      // Toggle theme by local setting
+      if (data.toggleAt > themeData.autoToggleAt) {
+        themeData.autoToggleAt = data.toggleAt;
+        handleThemeToggle(data.nightShift);
+      } else {
+        handleThemeToggle(themeData.nightShift);
+      }
+    } else if (nightModeOption == 'manual') {
+      handleThemeToggle(themeData.nightShift);
+    } else {
+      var nightShift = themeData.nightShift;
+      if (nightShift === undefined) {
+        nightShift = nightModeOption === 'on';
+      }
+      handleThemeToggle(nightShift);
+    }
+  })();
+</script>
+--><div id="click-to-top" class="click-to-top">
+  <i class="fa fa-arrow-up"></i>
+</div>
+<script>
+  (function () {
+    const clickToTop = document.getElementById('click-to-top');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 100) {
+        clickToTop.classList.add('show')
+      }else {
+        clickToTop.classList.remove('show')
+      }
+    });
+    clickToTop.addEventListener('click', () => {
+      window.smoothScrollTo(0);
+    });
+  })();
+</script>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <div class="framework">
+  <section class="main">
+
+     <br>
+<div class="post">
+  <section>
+    
+    <!-- custom title in each post  -->
+    <p style="color:black;font-weight:bold;font-size:180%;">Predicting loan defaults</p>
+    <hr>
+
+
+
+
+
+
+
+
+
+<article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+    <div class="post-content e-content" itemprop="articleBody">
+
+      <h2 id="introduction">Introduction</h2>
+
+<ul>
+  <li>
+    <p>The goal of this task is to fit a statistical model to historical credit data and then use the model to estimate the value of current loans.</p>
+  </li>
+  <li>
+    <p>Since this is a binary classification problem where the target variable is either DEFAULT or PAID, I will use Logistics Regression.</p>
+  </li>
+  <li>
+    <p>In addition to model building, I will illustrate how sklearn’s Pipeline is more convenient and simple to use than manually doing all transformation steps - especially for Cross Validation and Hyperparameters Tuning</p>
+  </li>
+</ul>
+
+<p>Data descriptions</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Column</th>
+      <th>account_no</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>account_no</td>
+      <td>A unique account number per loan</td>
+    </tr>
+    <tr>
+      <td>gender</td>
+      <td>The gender of the account holder - either <code class="language-plaintext highlighter-rouge">"M"</code> or <code class="language-plaintext highlighter-rouge">"F"</code>
+</td>
+    </tr>
+    <tr>
+      <td>age</td>
+      <td>The age of the account holder at the point of application</td>
+    </tr>
+    <tr>
+      <td>income</td>
+      <td>The monthly net income of the account holder at the point of application</td>
+    </tr>
+    <tr>
+      <td>loan_amount</td>
+      <td>The amount of money lent</td>
+    </tr>
+    <tr>
+      <td>term</td>
+      <td>The number of months that the loan is to be repaid over</td>
+    </tr>
+    <tr>
+      <td>installment_amount</td>
+      <td>The monthly installment amount</td>
+    </tr>
+    <tr>
+      <td>interest_rate</td>
+      <td>The interest rate on the loan</td>
+    </tr>
+    <tr>
+      <td>credit_score_at_application</td>
+      <td>The credit score at the point of application, this is a positive integer less than 1000. The higher the score the more creditworthy the applicant is believed to be</td>
+    </tr>
+    <tr>
+      <td>outstanding_balance</td>
+      <td>The remaining amount of the loan that still has to be repaid</td>
+    </tr>
+    <tr>
+      <td>status</td>
+      <td>This indicates what state the account is in. This field can take one of three values<br>- <code class="language-plaintext highlighter-rouge">"LIVE"</code> : The loan is still being repaid - the field <code class="language-plaintext highlighter-rouge">outstanding_balance</code>  will be greater than zero.<br>- <code class="language-plaintext highlighter-rouge">"PAID_UP"</code>: The loan has been completely repaid - the field <code class="language-plaintext highlighter-rouge">outstanding_balance</code> will be zero.<br>- <code class="language-plaintext highlighter-rouge">"DEFAULT"</code>: The loan was not fully repaid and no further payments can be expected - the field <code class="language-plaintext highlighter-rouge">outstanding_balance</code> will be greater than zero and the amount will not be recoverable.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="0-imports-and-read-data">0. Imports and read data</h2>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="n">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="kn">import</span> <span class="n">pandas</span> <span class="k">as</span> <span class="n">pd</span>
+<span class="kn">import</span> <span class="n">matplotlib.pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">import</span> <span class="n">seaborn</span> <span class="k">as</span> <span class="n">sns</span>
+
+<span class="kn">from</span> <span class="n">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LogisticRegression</span>
+<span class="kn">from</span> <span class="n">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">OneHotEncoder</span><span class="p">,</span> <span class="n">StandardScaler</span>
+<span class="kn">from</span> <span class="n">sklearn.metrics</span> <span class="kn">import</span> <span class="n">accuracy_score</span><span class="p">,</span> <span class="n">recall_score</span><span class="p">,</span> <span class="n">precision_score</span><span class="p">,</span> <span class="n">f1_score</span><span class="p">,</span> <span class="n">roc_curve</span>
+<span class="kn">from</span> <span class="n">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="kn">from</span> <span class="n">sklearn.compose</span> <span class="kn">import</span> <span class="n">ColumnTransformer</span>
+<span class="kn">from</span> <span class="n">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span><span class="p">,</span> <span class="n">cross_val_score</span><span class="p">,</span> <span class="n">KFold</span><span class="p">,</span> <span class="n">GridSearchCV</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="nf">read_csv</span><span class="p">(</span><span class="s">'./data/loan_default.csv'</span><span class="p">)</span>
+<span class="n">df</span><span class="p">.</span><span class="nf">head</span><span class="p">()</span>
+</code></pre></div></div>
+
+<table>
+  <thead>
+    <tr>
+      <th><strong>index</strong></th>
+      <th><strong>account_no</strong></th>
+      <th><strong>gender</strong></th>
+      <th><strong>age</strong></th>
+      <th><strong>income</strong></th>
+      <th><strong>loan_amount</strong></th>
+      <th><strong>term</strong></th>
+      <th><strong>installment_amount</strong></th>
+      <th><strong>interest_rate</strong></th>
+      <th><strong>credit_score_at_application</strong></th>
+      <th><strong>outstanding_balance</strong></th>
+      <th><strong>status</strong></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>acc_00000316</td>
+      <td>F</td>
+      <td>18</td>
+      <td>12143</td>
+      <td>47000</td>
+      <td>60</td>
+      <td>1045</td>
+      <td>0.12</td>
+      <td>860</td>
+      <td>0</td>
+      <td>PAID_UP</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>acc_00000422</td>
+      <td>F</td>
+      <td>18</td>
+      <td>6021</td>
+      <td>13000</td>
+      <td>60</td>
+      <td>330</td>
+      <td>0.18</td>
+      <td>640</td>
+      <td>0</td>
+      <td>PAID_UP</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>acc_00001373</td>
+      <td>F</td>
+      <td>39</td>
+      <td>12832</td>
+      <td>13000</td>
+      <td>60</td>
+      <td>296</td>
+      <td>0.13</td>
+      <td>820</td>
+      <td>0</td>
+      <td>PAID_UP</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>acc_00001686</td>
+      <td>F</td>
+      <td>33</td>
+      <td>4867</td>
+      <td>5000</td>
+      <td>36</td>
+      <td>191</td>
+      <td>0.22</td>
+      <td>540</td>
+      <td>0</td>
+      <td>PAID_UP</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>acc_00001733</td>
+      <td>F</td>
+      <td>23</td>
+      <td>5107</td>
+      <td>22000</td>
+      <td>36</td>
+      <td>818</td>
+      <td>0.20</td>
+      <td>580</td>
+      <td>11314</td>
+      <td>LIVE</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="1-exploratory-data-analysis">1. Exploratory Data Analysis</h2>
+
+<ul>
+  <li>
+<code class="language-plaintext highlighter-rouge">account_no</code> column is just an unique identifier and has no predictive power, we will drop it</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">outstanding_balance</code> will have value <code class="language-plaintext highlighter-rouge">=0</code> for <code class="language-plaintext highlighter-rouge">PAID_UP</code> status. Hence we will need to drop this column as well to prevent data leakage.</li>
+</ul>
+
+<h4 id="11-remove-live-rows">1.1 Remove <code class="language-plaintext highlighter-rouge">LIVE</code> rows</h4>
+
+<ul>
+  <li>As the business goal of this task is to estimate value of current loans, we will drop rows where <code class="language-plaintext highlighter-rouge">status</code> column is <code class="language-plaintext highlighter-rouge">LIVE</code>.</li>
+  <li>We will train the model on terminal loan statuses and run the prediction on this <code class="language-plaintext highlighter-rouge">LIVE</code> dataset later.</li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df_full_train</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="nf">drop</span><span class="p">(</span><span class="n">df</span><span class="p">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s">'status'</span><span class="p">]</span><span class="o">==</span><span class="s">'LIVE'</span><span class="p">].</span><span class="n">index</span><span class="p">)</span>
+<span class="n">df_live</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s">'status'</span><span class="p">]</span><span class="o">==</span><span class="s">'LIVE'</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p>The proportion of DEFAULT is about 7%. This level is used to sense check with the final model.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df_full_train</span><span class="p">[</span><span class="s">'status'</span><span class="p">].</span><span class="nf">value_counts</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="bp">True</span><span class="p">).</span><span class="nf">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">PAID_UP</span>    <span class="mf">0.931</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">DEFAULT</span>    <span class="mf">0.069</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Name</span><span class="p">:</span> <span class="n">status</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">float64</span>
+</code></pre></div></div>
+
+<p>Since the target variable is either <code class="language-plaintext highlighter-rouge">PAID_UP</code> or <code class="language-plaintext highlighter-rouge">DEFAULT</code>, we can simply replace the values. Since we are interested in <code class="language-plaintext highlighter-rouge">DEFAULT</code>, I will make it the positive class with value <code class="language-plaintext highlighter-rouge">1</code></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df_full_train</span><span class="p">[</span><span class="s">'status'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_full_train</span><span class="p">[</span><span class="s">'status'</span><span class="p">].</span><span class="nf">map</span><span class="p">({</span>
+    <span class="s">'PAID_UP'</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s">'DEFAULT'</span><span class="p">:</span> <span class="mi">1</span>
+<span class="p">})</span>
+
+<span class="n">df_full_train</span><span class="p">.</span><span class="nf">head</span><span class="p">()</span>
+</code></pre></div></div>
+
+<table>
+  <thead>
+    <tr>
+      <th><strong>index</strong></th>
+      <th><strong>account_no</strong></th>
+      <th><strong>gender</strong></th>
+      <th><strong>age</strong></th>
+      <th><strong>income</strong></th>
+      <th><strong>loan_amount</strong></th>
+      <th><strong>term</strong></th>
+      <th><strong>installment_amount</strong></th>
+      <th><strong>interest_rate</strong></th>
+      <th><strong>credit_score_at_application</strong></th>
+      <th><strong>outstanding_balance</strong></th>
+      <th><strong>status</strong></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>acc_00000316</td>
+      <td>F</td>
+      <td>18</td>
+      <td>12143</td>
+      <td>47000</td>
+      <td>60</td>
+      <td>1045</td>
+      <td>0.12</td>
+      <td>860</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>acc_00000422</td>
+      <td>F</td>
+      <td>18</td>
+      <td>6021</td>
+      <td>13000</td>
+      <td>60</td>
+      <td>330</td>
+      <td>0.18</td>
+      <td>640</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>acc_00001373</td>
+      <td>F</td>
+      <td>39</td>
+      <td>12832</td>
+      <td>13000</td>
+      <td>60</td>
+      <td>296</td>
+      <td>0.13</td>
+      <td>820</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>acc_00001686</td>
+      <td>F</td>
+      <td>33</td>
+      <td>4867</td>
+      <td>5000</td>
+      <td>36</td>
+      <td>191</td>
+      <td>0.22</td>
+      <td>540</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>acc_00002114</td>
+      <td>M</td>
+      <td>38</td>
+      <td>9328</td>
+      <td>25000</td>
+      <td>36</td>
+      <td>904</td>
+      <td>0.18</td>
+      <td>630</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">X</span> <span class="o">=</span> <span class="n">df_full_train</span><span class="p">.</span><span class="nf">drop</span><span class="p">([</span><span class="s">'account_no'</span><span class="p">,</span> <span class="s">'outstanding_balance'</span><span class="p">,</span> <span class="s">'status'</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">df_full_train</span><span class="p">[</span><span class="s">'status'</span><span class="p">]</span>
+</code></pre></div></div>
+
+<h4 id="12-univariate-distributions-of-features">1.2 Univariate distributions of features</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">NUMERICAL</span> <span class="o">=</span> <span class="nf">list</span><span class="p">(</span><span class="n">df</span><span class="p">.</span><span class="nf">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="s">'number'</span><span class="p">).</span><span class="n">columns</span><span class="p">)</span>
+<span class="n">CATEGORICAL</span> <span class="o">=</span> <span class="nf">list</span><span class="p">(</span><span class="n">df</span><span class="p">.</span><span class="nf">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="s">'object'</span><span class="p">).</span><span class="n">columns</span><span class="p">)</span>
+<span class="nf">print</span><span class="p">(</span><span class="n">NUMERICAL</span><span class="p">)</span>
+<span class="nf">print</span><span class="p">(</span><span class="n">CATEGORICAL</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="p">[</span><span class="s">'age'</span><span class="p">,</span> <span class="s">'income'</span><span class="p">,</span> <span class="s">'loan_amount'</span><span class="p">,</span> <span class="s">'term'</span><span class="p">,</span> <span class="s">'installment_amount'</span><span class="p">,</span> <span class="s">'interest_rate'</span><span class="p">,</span> <span class="s">'credit_score_at_application'</span><span class="p">,</span> <span class="s">'outstanding_balance'</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="p">[</span><span class="s">'account_no'</span><span class="p">,</span> <span class="s">'gender'</span><span class="p">,</span> <span class="s">'status'</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p>To understand the distributions of numerical data, we can plot individual historgrams</p>
+<ul>
+  <li>Since I want to interpret the coefficients, I will just leave them as is for the base model instead of transforming.</li>
+  <li>For this dataset, we don’t have issue with outliers except for <code class="language-plaintext highlighter-rouge">outstanding_balance</code>. But we will not be using this feature anyway.</li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="p">.</span><span class="nf">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">col_name</span> <span class="ow">in</span> <span class="nf">enumerate</span><span class="p">(</span><span class="n">NUMERICAL</span><span class="p">):</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="n">idx</span><span class="o">//</span><span class="mi">4</span><span class="p">,</span> <span class="n">idx</span><span class="o">%</span><span class="mi">4</span><span class="p">]</span>
+    <span class="n">ax</span><span class="p">.</span><span class="nf">set_title</span><span class="p">(</span><span class="n">col_name</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">.</span><span class="nf">hist</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">col_name</span><span class="p">],</span> <span class="n">ec</span><span class="o">=</span><span class="s">'white'</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">.</span><span class="nf">axvline</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="n">col_name</span><span class="p">].</span><span class="nf">mean</span><span class="p">(),</span> <span class="n">ls</span><span class="o">=</span><span class="s">'--'</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">'k'</span><span class="p">)</span>
+    <span class="n">sns</span><span class="p">.</span><span class="nf">despine</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="p">.</span><span class="nf">tight_layout</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p><img src="/assets/images/posts/predict-loan-default/notebook_18_0.png" alt="png"></p>
+
+<h4 id="13-bivariate-relationship-between-features-and-target-variable">1.3 Bivariate relationship between features and target variable</h4>
+
+<ul>
+  <li>To understand the relationship between each individual feature with the target, we can plot a correlation chart. However, since the target is binary, I will use boxplot instead.</li>
+  <li>In the charts below, <code class="language-plaintext highlighter-rouge">income</code>, <code class="language-plaintext highlighter-rouge">interest_rate</code> and <code class="language-plaintext highlighter-rouge">credit_score_at_application</code> are the strongest predictors of whether the loanee will default.</li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">fig2</span><span class="p">,</span> <span class="n">axes2</span> <span class="o">=</span> <span class="n">plt</span><span class="p">.</span><span class="nf">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nf">len</span><span class="p">(</span><span class="n">NUMERICAL</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">col_name</span> <span class="ow">in</span> <span class="nf">enumerate</span><span class="p">(</span><span class="n">NUMERICAL</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+    <span class="n">sns</span><span class="p">.</span><span class="nf">boxplot</span><span class="p">(</span>
+        <span class="n">df_full_train</span><span class="p">[[</span><span class="n">col_name</span><span class="p">,</span> <span class="s">'status'</span><span class="p">]],</span>
+        <span class="n">x</span><span class="o">=</span><span class="s">'status'</span><span class="p">,</span>
+        <span class="n">y</span><span class="o">=</span><span class="n">col_name</span><span class="p">,</span>
+        <span class="n">showfliers</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">ax</span><span class="o">=</span><span class="n">axes2</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+    
+    <span class="n">axes2</span><span class="p">[</span><span class="n">idx</span><span class="p">].</span><span class="nf">set_xlabel</span><span class="p">(</span><span class="s">'is_defaulted'</span><span class="p">)</span>
+    <span class="n">sns</span><span class="p">.</span><span class="nf">despine</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axes2</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+
+<span class="n">fig2</span><span class="p">.</span><span class="nf">tight_layout</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p><img src="/assets/images/posts/predict-loan-default/notebook_20_0.png" alt="png"></p>
+
+<h2 id="2-manual-fitting">2. Manual fitting</h2>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="nf">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">X_train</span> <span class="o">=</span> <span class="n">X_train</span><span class="p">.</span><span class="nf">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">X_test</span> <span class="o">=</span> <span class="n">X_test</span><span class="p">.</span><span class="nf">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="n">y_train</span> <span class="o">=</span> <span class="n">y_train</span><span class="p">.</span><span class="nf">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">y_test</span> <span class="o">=</span> <span class="n">y_test</span><span class="p">.</span><span class="nf">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h4 id="21-preprocessing">2.1 Preprocessing</h4>
+
+<h4 id="211-check-for-nannulls-values">2.1.1 Check for NaN/Nulls values</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">X_train</span><span class="p">.</span><span class="nf">isnull</span><span class="p">().</span><span class="nf">sum</span><span class="p">()</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">gender</span>                         <span class="mi">0</span>
+    <span class="n">age</span>                            <span class="mi">0</span>
+    <span class="n">income</span>                         <span class="mi">0</span>
+    <span class="n">loan_amount</span>                    <span class="mi">0</span>
+    <span class="n">term</span>                           <span class="mi">0</span>
+    <span class="n">installment_amount</span>             <span class="mi">0</span>
+    <span class="n">interest_rate</span>                  <span class="mi">0</span>
+    <span class="n">credit_score_at_application</span>    <span class="mi">0</span>
+    <span class="n">dtype</span><span class="p">:</span> <span class="n">int64</span>
+</code></pre></div></div>
+
+<h4 id="212-categorical-data">2.1.2 Categorical data</h4>
+
+<p>We will use one-hot encoding for <code class="language-plaintext highlighter-rouge">gender</code>. <code class="language-plaintext highlighter-rouge">0</code> represents Female, <code class="language-plaintext highlighter-rouge">1</code> represents Male</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">gender_encoder</span> <span class="o">=</span> <span class="nc">OneHotEncoder</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="s">'first'</span><span class="p">)</span>
+<span class="n">gender_encoder</span><span class="p">.</span><span class="nf">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="s">'gender'</span><span class="p">].</span><span class="n">values</span><span class="p">.</span><span class="nf">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">gender_encoder</span><span class="p">.</span><span class="n">categories_</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="p">[</span><span class="nf">array</span><span class="p">([</span><span class="s">'F'</span><span class="p">,</span> <span class="s">'M'</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)]</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># encode column
+</span><span class="n">encoded_gender</span> <span class="o">=</span> <span class="n">gender_encoder</span><span class="p">.</span><span class="nf">transform</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="s">'gender'</span><span class="p">].</span><span class="n">values</span><span class="p">.</span><span class="nf">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)).</span><span class="nf">toarray</span><span class="p">()</span>
+
+<span class="c1"># convert encoded columns into dataframe
+</span><span class="n">encoded_gender_df</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="nc">DataFrame</span><span class="p">(</span>
+    <span class="n">encoded_gender</span><span class="p">,</span>
+    <span class="n">columns</span><span class="o">=</span><span class="n">gender_encoder</span><span class="p">.</span><span class="nf">get_feature_names_out</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="c1"># merge original df with encoded df
+</span><span class="n">X_train</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="nf">concat</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">X_train</span><span class="p">,</span> <span class="n">encoded_gender_df</span><span class="p">],</span>
+    <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># drop original column
+</span><span class="n">X_train</span> <span class="o">=</span> <span class="n">X_train</span><span class="p">.</span><span class="nf">drop</span><span class="p">([</span><span class="s">'gender'</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">X_train</span><span class="p">.</span><span class="nf">head</span><span class="p">()</span>
+</code></pre></div></div>
+
+<table>
+  <thead>
+    <tr>
+      <th><strong>index</strong></th>
+      <th><strong>age</strong></th>
+      <th><strong>income</strong></th>
+      <th><strong>loan_amount</strong></th>
+      <th><strong>term</strong></th>
+      <th><strong>installment_amount</strong></th>
+      <th><strong>interest_rate</strong></th>
+      <th><strong>credit_score_at_application</strong></th>
+      <th><strong>x0_M</strong></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>33</td>
+      <td>16685</td>
+      <td>55000</td>
+      <td>60</td>
+      <td>1223</td>
+      <td>0.12</td>
+      <td>850</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>27</td>
+      <td>15050</td>
+      <td>28000</td>
+      <td>24</td>
+      <td>1331</td>
+      <td>0.13</td>
+      <td>840</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>50</td>
+      <td>40203</td>
+      <td>62000</td>
+      <td>48</td>
+      <td>1345</td>
+      <td>0.02</td>
+      <td>1000</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>26</td>
+      <td>13754</td>
+      <td>39000</td>
+      <td>48</td>
+      <td>1066</td>
+      <td>0.14</td>
+      <td>810</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>30</td>
+      <td>11830</td>
+      <td>31000</td>
+      <td>60</td>
+      <td>705</td>
+      <td>0.13</td>
+      <td>810</td>
+      <td>0.0</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4 id="213-numerical-data">2.1.3 Numerical data</h4>
+
+<p>For the base model, we keep numerical data intact.</p>
+
+<h3 id="22-fitting-logistics-regression-model">2.2 Fitting Logistics Regression Model</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">log_reg</span> <span class="o">=</span> <span class="nc">LogisticRegression</span><span class="p">(</span><span class="n">max_iter</span><span class="o">=</span><span class="mi">1_000</span><span class="p">)</span>
+<span class="n">log_reg</span><span class="p">.</span><span class="nf">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+</code></pre></div></div>
+
+<style>#sk-container-id-1 {color: black;background-color: white;}#sk-container-id-1 pre{padding: 0;}#sk-container-id-1 div.sk-toggleable {background-color: white;}#sk-container-id-1 label.sk-toggleable__label {cursor: pointer;display: block;width: 100%;margin-bottom: 0;padding: 0.3em;box-sizing: border-box;text-align: center;}#sk-container-id-1 label.sk-toggleable__label-arrow:before {content: "▸";float: left;margin-right: 0.25em;color: #696969;}#sk-container-id-1 label.sk-toggleable__label-arrow:hover:before {color: black;}#sk-container-id-1 div.sk-estimator:hover label.sk-toggleable__label-arrow:before {color: black;}#sk-container-id-1 div.sk-toggleable__content {max-height: 0;max-width: 0;overflow: hidden;text-align: left;background-color: #f0f8ff;}#sk-container-id-1 div.sk-toggleable__content pre {margin: 0.2em;color: black;border-radius: 0.25em;background-color: #f0f8ff;}#sk-container-id-1 input.sk-toggleable__control:checked~div.sk-toggleable__content {max-height: 200px;max-width: 100%;overflow: auto;}#sk-container-id-1 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {content: "▾";}#sk-container-id-1 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-1 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-1 input.sk-hidden--visually {border: 0;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);height: 1px;margin: -1px;overflow: hidden;padding: 0;position: absolute;width: 1px;}#sk-container-id-1 div.sk-estimator {font-family: monospace;background-color: #f0f8ff;border: 1px dotted black;border-radius: 0.25em;box-sizing: border-box;margin-bottom: 0.5em;}#sk-container-id-1 div.sk-estimator:hover {background-color: #d4ebff;}#sk-container-id-1 div.sk-parallel-item::after {content: "";width: 100%;border-bottom: 1px solid gray;flex-grow: 1;}#sk-container-id-1 div.sk-label:hover label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-1 div.sk-serial::before {content: "";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: 0;}#sk-container-id-1 div.sk-serial {display: flex;flex-direction: column;align-items: center;background-color: white;padding-right: 0.2em;padding-left: 0.2em;position: relative;}#sk-container-id-1 div.sk-item {position: relative;z-index: 1;}#sk-container-id-1 div.sk-parallel {display: flex;align-items: stretch;justify-content: center;background-color: white;position: relative;}#sk-container-id-1 div.sk-item::before, #sk-container-id-1 div.sk-parallel-item::before {content: "";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: -1;}#sk-container-id-1 div.sk-parallel-item {display: flex;flex-direction: column;z-index: 1;position: relative;background-color: white;}#sk-container-id-1 div.sk-parallel-item:first-child::after {align-self: flex-end;width: 50%;}#sk-container-id-1 div.sk-parallel-item:last-child::after {align-self: flex-start;width: 50%;}#sk-container-id-1 div.sk-parallel-item:only-child::after {width: 0;}#sk-container-id-1 div.sk-dashed-wrapped {border: 1px dashed gray;margin: 0 0.4em 0.5em 0.4em;box-sizing: border-box;padding-bottom: 0.4em;background-color: white;}#sk-container-id-1 div.sk-label label {font-family: monospace;font-weight: bold;display: inline-block;line-height: 1.2em;}#sk-container-id-1 div.sk-label-container {text-align: center;}#sk-container-id-1 div.sk-container {/* jupyter's `normalize.less` sets `[hidden] { display: none; }` but bootstrap.min.css set `[hidden] { display: none !important; }` so we also need the `!important` here to be able to override the default hidden behavior on the sphinx rendered scikit-learn.org. See: https://github.com/scikit-learn/scikit-learn/issues/21755 */display: inline-block !important;position: relative;}#sk-container-id-1 div.sk-text-repr-fallback {display: none;}</style>
+<div id="sk-container-id-1" class="sk-top-container">
+<div class="sk-text-repr-fallback">
+<pre>LogisticRegression(max_iter=1000)</pre>
+<b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br>On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b>
+</div>
+<div class="sk-container" hidden=""><div class="sk-item"><div class="sk-estimator sk-toggleable">
+<input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-1" type="checkbox" checked><label for="sk-estimator-id-1" class="sk-toggleable__label sk-toggleable__label-arrow">LogisticRegression</label><div class="sk-toggleable__content"><pre>LogisticRegression(max_iter=1000)</pre></div>
+</div></div></div>
+</div>
+
+<h4 id="23-model-coefficients">2.3 Model coefficients</h4>
+
+<p>An advantage of Logistics Regression is that the coefficients are white box, making it easier for stakeholders to understand why the model makes a certain prediction.</p>
+
+<p>We can write the full formula based on the fitted model’s intercept and coefficients</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">log_reg</span><span class="p">.</span><span class="n">intercept_</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nf">array</span><span class="p">([</span><span class="mf">1.22179855</span><span class="p">])</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">model_coefficients</span> <span class="o">=</span> <span class="nf">dict</span><span class="p">(</span><span class="nf">zip</span><span class="p">(</span>
+    <span class="nf">list</span><span class="p">(</span><span class="n">log_reg</span><span class="p">.</span><span class="n">feature_names_in_</span><span class="p">),</span>
+    <span class="nf">list</span><span class="p">(</span><span class="n">log_reg</span><span class="p">.</span><span class="n">coef_</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="p">)</span>
+
+<span class="n">model_coefficients</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="p">{</span><span class="s">'age'</span><span class="p">:</span> <span class="mf">0.057494705504614954</span><span class="p">,</span>
+     <span class="s">'income'</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.0032484557471085074</span><span class="p">,</span>
+     <span class="s">'loan_amount'</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.8753044215366256e-05</span><span class="p">,</span>
+     <span class="s">'term'</span><span class="p">:</span> <span class="mf">0.022543857502140222</span><span class="p">,</span>
+     <span class="s">'installment_amount'</span><span class="p">:</span> <span class="mf">0.0009745065842801654</span><span class="p">,</span>
+     <span class="s">'interest_rate'</span><span class="p">:</span> <span class="mf">0.6331692246041164</span><span class="p">,</span>
+     <span class="s">'credit_score_at_application'</span><span class="p">:</span> <span class="mf">0.0165512445820803</span><span class="p">,</span>
+     <span class="s">'x0_M'</span><span class="p">:</span> <span class="mf">7.976349551593769</span><span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>Hence the full formula is:</p>
+
+<p>$$ z = 1.222 + age * 0.057 +income * -0.003 +loan_amount * -0.0 +term * 0.023 +installment_amount * 0.001 +interest_rate * 0.633 +credit_score_at_application * 0.017 +x0_M * 7.976 $$</p>
+
+<p>$$ prob(default) = \frac{1}{1 + e^{-z}} $$</p>
+
+<p>To make a sample prediction, we can apply the above formula as follow:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">sample_data</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">'age'</span><span class="p">:</span> <span class="mi">30</span><span class="p">,</span>
+    <span class="s">'income'</span><span class="p">:</span> <span class="mi">10_000</span><span class="p">,</span>
+    <span class="s">'loan_amount'</span><span class="p">:</span> <span class="mi">20_000</span><span class="p">,</span>
+    <span class="s">'term'</span><span class="p">:</span> <span class="mi">60</span><span class="p">,</span>
+    <span class="s">'installment_amount'</span><span class="p">:</span> <span class="mi">1_000</span><span class="p">,</span>
+    <span class="s">'interest_rate'</span><span class="p">:</span> <span class="mf">0.15</span><span class="p">,</span>
+    <span class="s">'credit_score_at_application'</span><span class="p">:</span> <span class="mi">800</span><span class="p">,</span>
+    <span class="s">'x0_M'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span> <span class="nf">sigmoid</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+    <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="p">.</span><span class="n">e</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="n">n</span><span class="p">))</span>
+
+<span class="n">z</span> <span class="o">=</span> <span class="mf">1.22179855</span> <span class="o">+</span> <span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="nf">array</span><span class="p">(</span><span class="nf">list</span><span class="p">(</span><span class="n">model_coefficients</span><span class="p">.</span><span class="nf">values</span><span class="p">()))</span> <span class="o">*</span> <span class="n">np</span><span class="p">.</span><span class="nf">array</span><span class="p">(</span><span class="nf">list</span><span class="p">(</span><span class="n">sample_data</span><span class="p">.</span><span class="nf">values</span><span class="p">()))).</span><span class="nf">sum</span><span class="p">()</span>
+
+<span class="nf">print</span><span class="p">(</span><span class="s">'probability of default for sample data'</span><span class="p">)</span>
+<span class="nf">print</span><span class="p">(</span><span class="nf">sigmoid</span><span class="p">(</span><span class="n">z</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">probability</span> <span class="n">of</span> <span class="n">default</span> <span class="k">for</span> <span class="n">sample</span> <span class="n">data</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="mf">0.0015414024478882305</span>
+</code></pre></div></div>
+
+<p>To verify that the function works, we can compare predicted default probability by using the model’s <code class="language-plaintext highlighter-rouge">.predict()</code> method</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;&gt;&gt;</span> <span class="n">log_reg</span><span class="p">.</span><span class="nf">predict_proba</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="nf">array</span><span class="p">(</span><span class="nf">list</span><span class="p">(</span><span class="n">sample_data</span><span class="p">.</span><span class="nf">values</span><span class="p">())).</span><span class="nf">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">))[:,</span> <span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="mf">0.0015414024462043266</span>
+</code></pre></div></div>
+
+<h4 id="24-making-predictions">2.4 Making predictions</h4>
+
+<p>Now that we understand how the model works, let’s see how it performs on test data.</p>
+
+<p>In order to run the model on test data, we need to perform the same transformation steps above.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># encode column
+</span><span class="n">encoded_gender</span> <span class="o">=</span> <span class="n">gender_encoder</span><span class="p">.</span><span class="nf">transform</span><span class="p">(</span><span class="n">X_test</span><span class="p">[</span><span class="s">'gender'</span><span class="p">].</span><span class="n">values</span><span class="p">.</span><span class="nf">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)).</span><span class="nf">toarray</span><span class="p">()</span>
+
+<span class="c1"># convert encoded columns into dataframe
+</span><span class="n">encoded_gender_df</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="nc">DataFrame</span><span class="p">(</span>
+    <span class="n">encoded_gender</span><span class="p">,</span>
+    <span class="n">columns</span><span class="o">=</span><span class="n">gender_encoder</span><span class="p">.</span><span class="nf">get_feature_names_out</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="c1"># merge original df with encoded df
+</span><span class="n">X_test</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="nf">concat</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">X_test</span><span class="p">,</span> <span class="n">encoded_gender_df</span><span class="p">],</span>
+    <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># drop original column
+</span><span class="n">X_test</span> <span class="o">=</span> <span class="n">X_test</span><span class="p">.</span><span class="nf">drop</span><span class="p">([</span><span class="s">'gender'</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">X_test</span><span class="p">.</span><span class="nf">head</span><span class="p">()</span>
+</code></pre></div></div>
+
+<table>
+  <thead>
+    <tr>
+      <th><strong>index</strong></th>
+      <th><strong>age</strong></th>
+      <th><strong>income</strong></th>
+      <th><strong>loan_amount</strong></th>
+      <th><strong>term</strong></th>
+      <th><strong>installment_amount</strong></th>
+      <th><strong>interest_rate</strong></th>
+      <th><strong>credit_score_at_application</strong></th>
+      <th><strong>x0_M</strong></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>37</td>
+      <td>14163</td>
+      <td>28000</td>
+      <td>60</td>
+      <td>652</td>
+      <td>0.14</td>
+      <td>780</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>27</td>
+      <td>10769</td>
+      <td>33000</td>
+      <td>24</td>
+      <td>1584</td>
+      <td>0.14</td>
+      <td>790</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>28</td>
+      <td>10747</td>
+      <td>34000</td>
+      <td>48</td>
+      <td>929</td>
+      <td>0.14</td>
+      <td>790</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>22</td>
+      <td>14439</td>
+      <td>49000</td>
+      <td>24</td>
+      <td>2284</td>
+      <td>0.11</td>
+      <td>910</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>32</td>
+      <td>6400</td>
+      <td>17000</td>
+      <td>36</td>
+      <td>649</td>
+      <td>0.22</td>
+      <td>540</td>
+      <td>1.0</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">y_preds</span> <span class="o">=</span> <span class="n">log_reg</span><span class="p">.</span><span class="nf">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+<span class="n">y_preds</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nf">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">...,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+</code></pre></div></div>
+
+<h4 id="25-evaluate-model">2.5 Evaluate model</h4>
+
+<p>Accuracy, Recall, Precision, f1-score</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">evaluate_model</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>    
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">'accuracy'</span><span class="p">:</span> <span class="nf">accuracy_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">),</span>
+        <span class="s">'recall'</span><span class="p">:</span> <span class="nf">recall_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">),</span>
+        <span class="s">'precision'</span><span class="p">:</span> <span class="nf">precision_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">),</span>
+        <span class="s">'f1_score'</span><span class="p">:</span> <span class="nf">f1_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">result</span>
+
+<span class="nf">evaluate_model</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_preds</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="p">{</span><span class="s">'accuracy'</span><span class="p">:</span> <span class="mf">0.9705</span><span class="p">,</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="s">'recall'</span><span class="p">:</span> <span class="mf">0.8035714285714286</span><span class="p">,</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="s">'precision'</span><span class="p">:</span> <span class="mf">0.8385093167701864</span><span class="p">,</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="s">'f1_score'</span><span class="p">:</span> <span class="mf">0.8206686930091185</span><span class="p">}</span>
+</code></pre></div></div>
+
+<p>ROC curve</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">fpr</span><span class="p">,</span> <span class="n">tpr</span><span class="p">,</span> <span class="n">thres</span> <span class="o">=</span> <span class="nf">roc_curve</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">log_reg</span><span class="p">.</span><span class="nf">predict_proba</span><span class="p">(</span><span class="n">X_test</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">])</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="p">.</span><span class="nf">subplots</span><span class="p">()</span>
+<span class="n">ax</span><span class="p">.</span><span class="nf">set_aspect</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">.</span><span class="nf">plot</span><span class="p">(</span><span class="n">fpr</span><span class="p">,</span> <span class="n">tpr</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">'logistics regression model'</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">.</span><span class="nf">plot</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="nf">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1_000</span><span class="p">),</span> <span class="n">np</span><span class="p">.</span><span class="nf">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1_000</span><span class="p">),</span> <span class="n">ls</span><span class="o">=</span><span class="s">'--'</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">'random guess'</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">.</span><span class="nf">legend</span><span class="p">()</span>
+<span class="n">ax</span><span class="p">.</span><span class="nf">set_xlabel</span><span class="p">(</span><span class="s">'False positive rate'</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">.</span><span class="nf">set_ylabel</span><span class="p">(</span><span class="s">'True positive rate'</span><span class="p">)</span>
+</code></pre></div></div>
+<p><img src="/assets/images/posts/predict-loan-default/notebook_51_1.png" alt="png"></p>
+
+<p>At this point we have a working model.</p>
+
+<p>However in practice we rarely build just 1 model. We will need to experiment with different types of tranformation, and tuning hyperparameters</p>
+
+<p>As the number of transformations and parameters increases, we will need to keep track of more objects. This is cumbersome and prone to error. That’s why we will use a Pipeline.</p>
+
+<h2 id="3-using-pipelines">3. Using Pipelines</h2>
+
+<p>We can build the same model as above using fewer lines of code thanks to Pipeline</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="nf">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">X_train</span> <span class="o">=</span> <span class="n">X_train</span><span class="p">.</span><span class="nf">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">X_test</span> <span class="o">=</span> <span class="n">X_test</span><span class="p">.</span><span class="nf">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="n">y_train</span> <span class="o">=</span> <span class="n">y_train</span><span class="p">.</span><span class="nf">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">y_test</span> <span class="o">=</span> <span class="n">y_test</span><span class="p">.</span><span class="nf">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h4 id="31-column-transformers">3.1 Column transformers</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># define the column transformer to encode gender column
+</span><span class="n">column_transformer</span> <span class="o">=</span> <span class="nc">ColumnTransformer</span><span class="p">(</span>
+    <span class="n">transformers</span><span class="o">=</span><span class="p">[</span>
+        <span class="p">(</span><span class="s">'encoder'</span><span class="p">,</span> <span class="nc">OneHotEncoder</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="s">'first'</span><span class="p">),</span> <span class="p">[</span><span class="s">'gender'</span><span class="p">])</span>
+    <span class="p">],</span>
+    <span class="n">remainder</span><span class="o">=</span><span class="s">'passthrough'</span>
+<span class="p">)</span>
+</code></pre></div></div>
+
+<h4 id="32-build-and-fit-pipeline">3.2 Build and fit pipeline</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># define the pipeline with column transformer and logistic regression
+</span><span class="n">pipeline</span> <span class="o">=</span> <span class="nc">Pipeline</span><span class="p">([</span>
+    <span class="p">(</span><span class="s">'preprocessor'</span><span class="p">,</span> <span class="n">column_transformer</span><span class="p">),</span>
+    <span class="p">(</span><span class="s">'classifier'</span><span class="p">,</span> <span class="nc">LogisticRegression</span><span class="p">(</span><span class="n">max_iter</span><span class="o">=</span><span class="mi">1_000</span><span class="p">))</span>
+<span class="p">])</span>
+
+<span class="c1"># fit the pipeline to the training data
+</span><span class="n">pipeline</span><span class="p">.</span><span class="nf">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+
+<span class="n">preds</span> <span class="o">=</span> <span class="n">pipeline</span><span class="p">.</span><span class="nf">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+
+<span class="nf">evaluate_model</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">preds</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="p">{</span><span class="s">'accuracy'</span><span class="p">:</span> <span class="mf">0.9705</span><span class="p">,</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="s">'recall'</span><span class="p">:</span> <span class="mf">0.8035714285714286</span><span class="p">,</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="s">'precision'</span><span class="p">:</span> <span class="mf">0.8385093167701864</span><span class="p">,</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="s">'f1_score'</span><span class="p">:</span> <span class="mf">0.8206686930091185</span><span class="p">}</span>
+</code></pre></div></div>
+
+<p>Here we can verify that pipeline produces the same result as manual steps by comparing predicted output and metrics.</p>
+
+<h4 id="33-cross-validation-with-pipeline">3.3 Cross validation with Pipeline</h4>
+
+<ul>
+  <li>
+    <p>Cross-validation is a technique that is used to evaluate the performance of the model. In cross-validation, the data is split into k-folds, where each fold is used for testing at least once. For example, if 5-fold cross-validation is used, then in the first iteration, fold 1 may be used for testing and folds 2–5 for training. In the second iteration, fold 2 may be used for testing, the rest of the folds for training the model, and so on until all the folds are used for testing at least once.</p>
+  </li>
+  <li>
+    <p>K-fold cross-validation can be especially useful when the dataset is small or imbalanced, as it allows for the model to be evaluated on all of the data, even if some observations have low representation in the dataset.</p>
+  </li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Define the cross-validation strategy
+</span><span class="n">cv</span> <span class="o">=</span> <span class="nc">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+
+<span class="c1"># Perform cross-validation
+</span><span class="n">acc_scores</span> <span class="o">=</span> <span class="nf">cross_val_score</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">)</span>
+
+<span class="c1"># Compute the mean and standard deviation of the scores
+</span><span class="nf">print</span><span class="p">(</span><span class="s">"Accuracy: %0.2f (+/- %0.2f)"</span> <span class="o">%</span> <span class="p">(</span><span class="n">acc_scores</span><span class="p">.</span><span class="nf">mean</span><span class="p">(),</span> <span class="n">acc_scores</span><span class="p">.</span><span class="nf">std</span><span class="p">()</span> <span class="o">*</span> <span class="mi">2</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Accuracy</span><span class="p">:</span> <span class="mf">0.97</span> <span class="p">(</span><span class="o">+/-</span> <span class="mf">0.02</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h4 id="34-hyperparameters-tuning">3.4 Hyperparameters tuning</h4>
+
+<p>Hyperparameter tuning refers to the process of selecting the best hyperparameters for a machine learning model in order to achieve optimal performance. In the case of logistic regression classification, hyperparameters are values that are set before the learning process begins and affect the behavior of the model.</p>
+
+<p>Here are some hyperparameters that we can tune for Logistics Regression:</p>
+<ul>
+  <li>
+    <p>Regularization strength: Regularization helps to prevent overfitting of the model by penalizing large coefficients. The regularization strength hyperparameter controls the amount of penalization applied.</p>
+  </li>
+  <li>
+    <p>Solver: The solver is the algorithm used to optimize the logistic regression objective function. There are several solvers available, such as ‘newton-cg’, ‘lbfgs’, and ‘liblinear’, each with different strengths and weaknesses.</p>
+  </li>
+  <li>
+    <p>Maximum number of iterations: The maximum number of iterations determines the maximum number of iterations for the solver to converge.</p>
+  </li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">column_transformer</span> <span class="o">=</span> <span class="nc">ColumnTransformer</span><span class="p">(</span>
+    <span class="n">transformers</span><span class="o">=</span><span class="p">[</span>
+        <span class="p">(</span><span class="s">'categorical_encoder'</span><span class="p">,</span> <span class="nc">OneHotEncoder</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="s">'first'</span><span class="p">),</span> <span class="p">[</span><span class="s">'gender'</span><span class="p">]),</span>
+        <span class="p">(</span><span class="s">'numerical_scaler'</span><span class="p">,</span> <span class="nc">StandardScaler</span><span class="p">(),</span> <span class="n">NUMERICAL</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="p">],</span>
+    <span class="n">remainder</span><span class="o">=</span><span class="s">'passthrough'</span>
+<span class="p">)</span>
+
+<span class="n">my_pipeline</span> <span class="o">=</span> <span class="nc">Pipeline</span><span class="p">([</span>
+    <span class="p">(</span><span class="s">'preprocessor'</span><span class="p">,</span> <span class="n">column_transformer</span><span class="p">),</span>
+    <span class="p">(</span><span class="s">'classifier'</span><span class="p">,</span> <span class="nc">LogisticRegression</span><span class="p">(</span><span class="n">max_iter</span><span class="o">=</span><span class="mi">10_000</span><span class="p">))</span>
+<span class="p">])</span>
+
+
+<span class="c1"># Define the hyperparameters to tune
+</span><span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">'preprocessor__numerical_scaler__with_mean'</span><span class="p">:</span> <span class="p">[</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">],</span>
+    <span class="s">'classifier__penalty'</span><span class="p">:</span> <span class="p">[</span><span class="s">'l1'</span><span class="p">,</span> <span class="s">'l2'</span><span class="p">],</span>
+    <span class="s">'classifier__C'</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span>
+    <span class="s">'classifier__solver'</span><span class="p">:</span> <span class="p">[</span><span class="s">'liblinear'</span><span class="p">,</span> <span class="s">'saga'</span><span class="p">]</span>
+<span class="p">}</span>
+
+
+<span class="c1"># Create a grid search object
+</span><span class="n">grid_search</span> <span class="o">=</span> <span class="nc">GridSearchCV</span><span class="p">(</span><span class="n">my_pipeline</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+
+<span class="c1"># Fit the grid search object on the data
+</span><span class="n">grid_search</span><span class="p">.</span><span class="nf">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">print</span><span class="p">(</span><span class="s">"Best parameters: "</span><span class="p">,</span> <span class="n">grid_search</span><span class="p">.</span><span class="n">best_params_</span><span class="p">)</span>
+<span class="nf">print</span><span class="p">(</span><span class="s">"Best cross-validation score: "</span><span class="p">,</span> <span class="n">grid_search</span><span class="p">.</span><span class="n">best_score_</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Best</span> <span class="n">parameters</span><span class="p">:</span>  <span class="p">{</span><span class="s">'classifier__C'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">'classifier__penalty'</span><span class="p">:</span> <span class="s">'l1'</span><span class="p">,</span> <span class="s">'classifier__solver'</span><span class="p">:</span> <span class="s">'saga'</span><span class="p">,</span> <span class="s">'preprocessor__numerical_scaler__with_mean'</span><span class="p">:</span> <span class="bp">True</span><span class="p">}</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Best</span> <span class="n">cross</span><span class="o">-</span><span class="n">validation</span> <span class="n">score</span><span class="p">:</span>  <span class="mf">0.9728653846153847</span>
+</code></pre></div></div>
+
+<h4 id="35-retrain-piepline-on-the-best-params">3.5 Retrain piepline on the best params</h4>
+
+<p>Training the model on the best params give us improved metrics</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">column_transformer</span> <span class="o">=</span> <span class="nc">ColumnTransformer</span><span class="p">(</span>
+    <span class="n">transformers</span><span class="o">=</span><span class="p">[</span>
+        <span class="p">(</span><span class="s">'categorical_encoder'</span><span class="p">,</span> <span class="nc">OneHotEncoder</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="s">'first'</span><span class="p">),</span> <span class="p">[</span><span class="s">'gender'</span><span class="p">]),</span>
+        <span class="p">(</span><span class="s">'numerical_scaler'</span><span class="p">,</span> <span class="nc">StandardScaler</span><span class="p">(</span><span class="n">with_mean</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span> <span class="n">NUMERICAL</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="p">],</span>
+    <span class="n">remainder</span><span class="o">=</span><span class="s">'passthrough'</span>
+<span class="p">)</span>
+
+<span class="n">best_pipeline</span> <span class="o">=</span> <span class="nc">Pipeline</span><span class="p">([</span>
+    <span class="p">(</span><span class="s">'preprocessor'</span><span class="p">,</span> <span class="n">column_transformer</span><span class="p">),</span>
+    <span class="p">(</span><span class="s">'classifier'</span><span class="p">,</span> <span class="nc">LogisticRegression</span><span class="p">(</span><span class="n">penalty</span><span class="o">=</span><span class="s">'l1'</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">6_000</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s">'saga'</span><span class="p">))</span>
+<span class="p">])</span>
+
+
+<span class="c1"># fit the pipeline to the training data
+</span><span class="n">best_pipeline</span><span class="p">.</span><span class="nf">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+
+<span class="n">preds</span> <span class="o">=</span> <span class="n">best_pipeline</span><span class="p">.</span><span class="nf">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+
+<span class="nf">evaluate_model</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">preds</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="p">{</span><span class="s">'accuracy'</span><span class="p">:</span> <span class="mf">0.971</span><span class="p">,</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="s">'recall'</span><span class="p">:</span> <span class="mf">0.8214285714285714</span><span class="p">,</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="s">'precision'</span><span class="p">:</span> <span class="mf">0.8313253012048193</span><span class="p">,</span>
+<span class="o">&gt;&gt;&gt;</span><span class="s">'f1_score'</span><span class="p">:</span> <span class="mf">0.8263473053892216</span><span class="p">}</span>
+
+</code></pre></div></div>
+
+<h2 id="4-predict-model-on-live-loans-data">4. Predict model on <code class="language-plaintext highlighter-rouge">LIVE</code> loans data</h2>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df_live</span> <span class="o">=</span> <span class="n">df_live</span><span class="p">.</span><span class="nf">drop</span><span class="p">([</span><span class="s">'account_no'</span><span class="p">,</span> <span class="s">'status'</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">df_live</span> <span class="o">=</span> <span class="n">df_live</span><span class="p">.</span><span class="nf">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">df_live</span><span class="p">[</span><span class="s">'predicted_default'</span><span class="p">]</span> <span class="o">=</span> <span class="n">best_pipeline</span><span class="p">.</span><span class="nf">predict</span><span class="p">(</span><span class="n">df_live</span><span class="p">.</span><span class="nf">drop</span><span class="p">([</span><span class="s">'outstanding_balance'</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">df_live</span><span class="p">[</span><span class="s">'default_prob'</span><span class="p">]</span> <span class="o">=</span> <span class="n">best_pipeline</span><span class="p">.</span><span class="nf">predict_proba</span><span class="p">(</span><span class="n">df_live</span><span class="p">.</span><span class="nf">drop</span><span class="p">([</span><span class="s">'outstanding_balance'</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))[:,</span> <span class="mi">1</span><span class="p">].</span><span class="nf">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df_live</span><span class="p">.</span><span class="nf">head</span><span class="p">()</span>
+</code></pre></div></div>
+
+<table>
+  <thead>
+    <tr>
+      <th><strong>index</strong></th>
+      <th><strong>gender</strong></th>
+      <th><strong>age</strong></th>
+      <th><strong>income</strong></th>
+      <th><strong>loan_amount</strong></th>
+      <th><strong>term</strong></th>
+      <th><strong>installment_amount</strong></th>
+      <th><strong>interest_rate</strong></th>
+      <th><strong>credit_score_at_application</strong></th>
+      <th><strong>outstanding_balance</strong></th>
+      <th><strong>predicted_default</strong></th>
+      <th><strong>default_prob</strong></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>F</td>
+      <td>23</td>
+      <td>5107</td>
+      <td>22000</td>
+      <td>36</td>
+      <td>818</td>
+      <td>0.20</td>
+      <td>580</td>
+      <td>11314</td>
+      <td>0</td>
+      <td>0.043</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>F</td>
+      <td>40</td>
+      <td>15659</td>
+      <td>33000</td>
+      <td>48</td>
+      <td>853</td>
+      <td>0.11</td>
+      <td>880</td>
+      <td>5637</td>
+      <td>0</td>
+      <td>0.000</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>M</td>
+      <td>25</td>
+      <td>15660</td>
+      <td>15000</td>
+      <td>48</td>
+      <td>395</td>
+      <td>0.12</td>
+      <td>860</td>
+      <td>6039</td>
+      <td>0</td>
+      <td>0.000</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>F</td>
+      <td>30</td>
+      <td>4208</td>
+      <td>15000</td>
+      <td>48</td>
+      <td>481</td>
+      <td>0.23</td>
+      <td>530</td>
+      <td>2817</td>
+      <td>0</td>
+      <td>0.297</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>F</td>
+      <td>18</td>
+      <td>6535</td>
+      <td>12000</td>
+      <td>48</td>
+      <td>346</td>
+      <td>0.17</td>
+      <td>660</td>
+      <td>3120</td>
+      <td>0</td>
+      <td>0.001</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">expected_book_value</span> <span class="o">=</span> <span class="p">(</span><span class="n">df_live</span><span class="p">[</span><span class="s">'outstanding_balance'</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">df_live</span><span class="p">[</span><span class="s">'default_prob'</span><span class="p">])).</span><span class="nf">sum</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="sa">f</span><span class="s">"total outstanding balance =</span><span class="se">\t</span><span class="si">{</span><span class="n">df_live</span><span class="p">[</span><span class="s">'outstanding_balance'</span><span class="p">].</span><span class="nf">sum</span><span class="p">()</span><span class="si">:</span><span class="p">,.</span><span class="mi">2</span><span class="n">f</span><span class="si">}</span><span class="s">"</span><span class="p">)</span>
+<span class="nf">print</span><span class="p">(</span><span class="sa">f</span><span class="s">"expected recoverable value =</span><span class="se">\t</span><span class="si">{</span><span class="n">expected_book_value</span><span class="si">:</span><span class="p">,.</span><span class="mi">2</span><span class="n">f</span><span class="si">}</span><span class="s">"</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">total</span> <span class="n">outstanding</span> <span class="n">balance</span> <span class="o">=</span>	<span class="mi">24</span><span class="p">,</span><span class="mi">622</span><span class="p">,</span><span class="mf">111.00</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">expected</span> <span class="n">recoverable</span> <span class="n">value</span> <span class="o">=</span> <span class="mi">23</span><span class="p">,</span><span class="mi">809</span><span class="p">,</span><span class="mf">056.25</span>
+</code></pre></div></div>
+
+<h2 id="5-summary">5. Summary</h2>
+<p><strong>What we did</strong></p>
+<ul>
+  <li>We built a Logistics Regression for a classification of loan default.</li>
+  <li>We chose Logistics Regression because it’s a white box model with clear parameters, making iteasier to explain to business stakeholders.</li>
+  <li>We used sklearn’s Pipeline to make it easy to do Cross Validation and Hyperparameters Tuning</li>
+</ul>
+
+<p><strong>Improvement ideas</strong></p>
+<ul>
+  <li>For the sake of simplicity I have not factored in time value of money. But this can be done by discounting each payment according to their expected due date.</li>
+  <li>By default, <code class="language-plaintext highlighter-rouge">pipeline.predict()</code> has a decision threshold of <code class="language-plaintext highlighter-rouge">0.5</code>. Meaning that if <code class="language-plaintext highlighter-rouge">pipeline.predict_proba()</code> is above <code class="language-plaintext highlighter-rouge">0.5</code> then the data will be classified as default.
+    <ul>
+      <li>At a recall score of <code class="language-plaintext highlighter-rouge">0.82</code> we expect about 8 out of 10 defaults are identified.</li>
+      <li>We can improve recall by lowering the decision threshold. The cost will be more false positive (non-default classified as default)</li>
+      <li>Depending on the business objective, we can fine tune threshold level. If we want to be conservative with our estimate, then higher recall might be more acceptable.</li>
+    </ul>
+  </li>
+  <li>We can also explore ensemble methods, such as xgboost, as it works well with tabular data</li>
+</ul>
+
+
+    </div>
+
+</article>
+<!--<div class="post-nav"><a class="previous" href="/jekyll-theme-yat/2023/02/15/guess-digits.html" title="Guessing user drawn digit">Guessing user drawn digit</a><a class="next" href="/jekyll-theme-yat/2023/03/08/predict-hdb-resale.html" title="Analyzing Singapore&#39;s HDB flats resale price">Analyzing Singapore&#39;s HDB flats resale price...</a></div>-->
+    
+    <!-- back url at the bottom of the post-->
+  
+    <a href="https://dobeok.github.io/" title="" style="font-size:140%"><i class="fa fa-home"></i> Home</a>
+    <!--<div class="post-related">
+      <div>Related Articles</div>
+      <ul>
+        <li><a class="post-link" href="/jekyll-theme-yat/2023/02/15/guess-digits.html" title="Analyzing Singapore&#39;s HDB flats resale price">Guessing user drawn digit</a></li><li><a class="post-link" href="/jekyll-theme-yat/2022/06/01/pokermon-guesser.html" title="Analyzing Singapore&#39;s HDB flats resale price">Creating a pokemon guesser</a></li><li><a class="post-link" href="/jekyll-theme-yat/2020/08/21/estimate-pi.html" title="Analyzing Singapore&#39;s HDB flats resale price">Estimate pi using Monte Carlo simulation</a></li><li><a class="post-link" href="/jekyll-theme-yat/2023/01/31/vn-exam.html" title="Analyzing Singapore&#39;s HDB flats resale price">Analyzing Vietnam&#39;s high school graduation exam results</a></li></ul>
+    </div>--><!--<div class="post-comments"></div>-->
+
+  </section>
+</div>
+
+
+  </section>
+  <section class="sidebar" style="margin-left: 15px;">
+    <!-- Get sidebar items --><style type="text/css" media="screen">
+.post-menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+</style>
+
+<div class="post-menu">
+  <div class="post-menu-title">Contents</div>
+  <div class="post-menu-content"></div>
+</div>
+
+<script>
+  function generateContent() {
+    var menu = document.querySelector(".post-menu");
+    var menuContent =  menu.querySelector(".post-menu-content");
+    var headings = document.querySelector(".post-content").querySelectorAll("h2, h3, h4, h5, h6");
+
+    // Hide menu when no headings
+    if (headings.length === 0) {
+      return menu.style.display = "none";
+    }
+
+    // Generate post menu
+    var menuHTML = '';
+    for (var i = 0; i < headings.length; i++) {
+      var h = headings[i];
+      menuHTML += (
+        '<li class="h-' + h.tagName.toLowerCase() + '">'
+        + '<a href="#h-' + h.getAttribute('id') + '">' + h.textContent + '</a></li>');
+    }
+
+    menuContent.innerHTML = '<ul>' + menuHTML + '</ul>';
+
+    // The header element
+    var header = document.querySelector('header.site-header');
+
+    function doMenuCollapse(index, over_items) {
+      var items = menuContent.firstChild.children;
+
+      if (over_items == undefined) {
+        over_items = 20;
+      }
+
+      if (items.length < over_items) {
+        return;
+      }
+
+      var activeItem = items[index];
+      var beginItem = activeItem
+      var endItem = activeItem
+      var beginIndex = index;
+      var endIndex = index + 1;
+      while (beginIndex >= 0
+        && !items[beginIndex].classList.contains('h-h2')) {
+        beginIndex -= 1;
+      }
+      while (endIndex < items.length
+        && !items[endIndex].classList.contains('h-h2')) {
+        endIndex += 1;
+      }
+      for (var i = 0; i < beginIndex; i++) {
+        item = items[i]
+        if (!item.classList.contains('h-h2')) {
+          item.style.display = 'none';
+        }
+      }
+      for (var i = beginIndex + 1; i < endIndex; i++) {
+        item = items[i]
+        // if (!item.classList.contains('h-h2')) {
+          item.style.display = '';
+        // }
+      }
+      for (var i = endIndex; i < items.length; i++) {
+        item = items[i]
+        if (!item.classList.contains('h-h2')) {
+          item.style.display = 'none';
+        }
+      }
+    }
+
+    // Init menu collapsed
+    doMenuCollapse(-1);
+
+    // Active the menu item
+    window.addEventListener('scroll', function (event) {
+      var lastActive = menuContent.querySelector('.active');
+      var changed = true;
+      var activeIndex = -1;
+      for (var i = headings.length - 1; i >= 0; i--) {
+        var h = headings[i];
+        var headingRect = h.getBoundingClientRect();
+        var headerRect = header.getBoundingClientRect();
+        var headerTop = Math.floor(headerRect.top);
+        var headerHeight = Math.floor(headerRect.height);
+        var headerHeight = headerTop + headerHeight + 20;
+        if (headingRect.top <= headerHeight) {
+          var id = 'h-' + h.getAttribute('id');
+          var a = menuContent.querySelector('a[href="#' + id  + '"]');
+          var curActive = a.parentNode;
+          if (curActive) {
+            curActive.classList.add('active');
+            activeIndex = i;
+          }
+          if (lastActive == curActive) {
+            changed = false;
+          }
+          break;
+        }
+      }
+      if (changed) {
+        if (lastActive) {
+          lastActive.classList.remove('active');
+        }
+        doMenuCollapse(activeIndex);
+      }
+      event.preventDefault();
+    });
+  }
+  generateContent();
+</script>
+</section>
+</div>
+
+
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/jekyll-theme-yat/"></data>
+
+  <div class="wrapper">
+    <div class="site-footer-inner">
+<div>
+<span class="copyleft">©</span> 2020-2023 Vo Duy Do</div>
+      <div>
+<a href="https://github.com/dobeok" target="_blank">My Github </a> | <a href="/about">About Me</a>
+</div>
+      <!-- <div>Powered by <a title="Jekyll is a simple, blog-aware, static site
+      generator." href="https://jekyllrb.com/">Jekyll</a> &amp; <a title="Yat, yet
+      another theme." href="https://github.com/jeffreytse/jekyll-theme-yat">Yat Theme</a>.</div>
+      <div class="footer-col rss-subscribe">Subscribe <a href="/jekyll-theme-yat/feed.xml">via RSS</a></div> -->
+    </div>
+  </div>
+</footer>
+</body>
+</html>

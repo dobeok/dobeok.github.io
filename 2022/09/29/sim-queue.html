@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="google-translate-customization" content="108d9124921d80c3-80e20d618ff053c8-g4f02ec6f3dba68b7-c">
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Simulating a queue system | My data science projects</title>
+<meta name="generator" content="Jekyll v4.3.2">
+<meta property="og:title" content="Simulating a queue system">
+<meta name="author" content="Vo Duy Do">
+<meta property="og:locale" content="en_US">
+<meta name="description" content="Using simpy to simulate a queueing line at the airport check in counters. This is an example of Discret-event simulation (DES). In contrast to Monte-Carlo simulation, DES are useful when you need to keep track of a system’s state and analyze resource usage over time">
+<meta property="og:description" content="Using simpy to simulate a queueing line at the airport check in counters. This is an example of Discret-event simulation (DES). In contrast to Monte-Carlo simulation, DES are useful when you need to keep track of a system’s state and analyze resource usage over time">
+<link rel="canonical" href="https://dobeok.github.io//jekyll-theme-yat/2022/09/29/sim-queue.html">
+<meta property="og:url" content="https://dobeok.github.io//jekyll-theme-yat/2022/09/29/sim-queue.html">
+<meta property="og:site_name" content="My data science projects">
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2022-09-29T05:00:00+00:00">
+<meta name="twitter:card" content="summary">
+<meta property="twitter:title" content="Simulating a queue system">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Vo Duy Do"},"dateModified":"2022-09-29T05:00:00+00:00","datePublished":"2022-09-29T05:00:00+00:00","description":"Using simpy to simulate a queueing line at the airport check in counters. This is an example of Discret-event simulation (DES). In contrast to Monte-Carlo simulation, DES are useful when you need to keep track of a system’s state and analyze resource usage over time","headline":"Simulating a queue system","mainEntityOfPage":{"@type":"WebPage","@id":"https://dobeok.github.io//jekyll-theme-yat/2022/09/29/sim-queue.html"},"url":"https://dobeok.github.io//jekyll-theme-yat/2022/09/29/sim-queue.html"}</script>
+<!-- End Jekyll SEO tag -->
+<!-- <link rel="shortcut icon" href="https://dobeok.github.io//jekyll-theme-yat/favicon.ico" /> -->
+  <link rel="icon" href="/assets/images/icon.svg">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-noto-sans@0.0.72/index.min.css">
+  
+  
+  <link rel="stylesheet" href="/jekyll-theme-yat/assets/css/main.css">
+  <script src="/jekyll-theme-yat/assets/js/main.js"></script><link type="application/atom+xml" rel="alternate" href="https://dobeok.github.io//jekyll-theme-yat/feed.xml" title="My data science projects">
+<script>
+  function initGoogleAnalytics() {
+    var doNotTrack = (window.doNotTrack === "1" || navigator.doNotTrack === "1" ||
+      navigator.doNotTrack === "yes" || navigator.msDoNotTrack === "1");
+    var enableDNT = "true" == "true";
+
+    if (!enableDNT || !doNotTrack) {
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'G-13G9T0DNE2', 'auto');
+      ga('send', 'pageview');
+    }
+  }
+  window.addEventListener("load", initGoogleAnalytics);
+</script>
+
+<!-- <link rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/default.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js"></script> -->
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/base16/material.min.css">
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+
+
+
+
+<!-- and it's easy to individually load additional languages -->
+<script charset="UTF-8" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/languages/go.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+// Init highlight js
+document.addEventListener('DOMContentLoaded', function(event) {
+  var els = document.querySelectorAll('pre code')
+
+  function addLangData(block) {
+    var outer = block.parentElement.parentElement.parentElement;
+    var lang = block.getAttribute('data-lang');
+    for (var i = 0; i < outer.classList.length; i++) {
+      var cls = outer.classList[i];
+      if (cls.startsWith('language-')) {
+        lang = cls;
+        break;
+      }
+    }
+    if (!lang) {
+      cls = block.getAttribute('class');
+      lang = cls ? cls.replace('hljs ', '') : '';
+    }
+    if (lang.startsWith('language-')) {
+      lang = lang.substr(9);
+    }
+    block.setAttribute('class', 'hljs ' + lang);
+    block.parentNode.setAttribute('data-lang', lang);
+  }
+
+  function addBadge(block) {
+    var enabled = ('true' || 'true').toLowerCase();
+    if (enabled == 'true') {
+      var pre = block.parentElement;
+      pre.classList.add('badge');
+    }
+  }
+
+  function handle(block) {
+    addLangData(block);
+    addBadge(block)
+    hljs.highlightBlock(block);
+  }
+
+  for (var i = 0; i < els.length; i++) {
+    var el = els[i];
+    handle(el);
+  }
+});
+</script>
+
+<style>
+  /* code language badge */
+  pre.badge::before {
+    content: attr(data-lang);
+    /* color: #f0f0f0; */
+    color: #fff;
+    /* background-color: #ff4e00; */
+    background-color: #000000 ;
+    padding: 0 .5em;
+    border-radius: 0 2px;
+    text-transform: uppercase;
+    text-align: center;
+    min-width: 32px;
+    display: inline-block;
+    position: absolute;
+    right: 0;
+  }
+
+  /* fix wrong badge display for firefox browser */
+  code > table pre::before {
+    display: none;
+  }
+</style>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-13G9T0DNE2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-13G9T0DNE2');
+</script>
+</head>
+<body>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<header class="site-header " role="banner">
+
+  <div class="wrapper">
+    <div class="site-header-inner">
+<span class="site-brand"><a class="site-brand-inner" rel="author" href="/jekyll-theme-yat/">
+  <img class="site-favicon" title="My data science projects" src="/assets/images/icon.svg" onerror="this.style.display='none'">
+  My data science projects
+  <!-- left hand side favicon and title - optional - I removed to clean up -->
+</a>
+</span><nav class="site-nav">
+          <input type="checkbox" id="nav-trigger" class="nav-trigger">
+          <label for="nav-trigger">
+            <span class="menu-icon">
+              <svg viewbox="0 0 18 15" width="18px" height="15px">
+                <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"></path>
+              </svg>
+            </span>
+          </label>
+
+          <div class="trigger">
+<a class="page-link" href="/jekyll-theme-yat/">Home</a><a class="page-link" href="/jekyll-theme-yat/about.html">About Me</a><!--
+
+
+
+
+
+
+
+
+
+<span class="page-link">
+
+
+
+<div id="google_translate_element" style="display: none;">
+</div>
+
+<span class="ct-language">
+  <ul class="list-unstyled ct-language-dropdown">
+    
+      <li>
+        <a href="#" class="lang-select" data-lang="en">
+          
+          <img src="https://cdn.countryflags.com/thumbs/united-states-of-america/flag-400.png" title="English">
+          
+        </a>
+      </li>
+    
+      <li>
+        <a href="#" class="lang-select" data-lang="vi">
+          
+          <img src="https://cdn.countryflags.com/thumbs/vietnam/flag-400.png" title="Vietnamese">
+          
+        </a>
+      </li>
+    
+  </ul>
+</span>
+
+<script type="text/javascript">
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({
+    pageLanguage: 'en',
+    autoDisplay: false,
+    layout: google.translate.TranslateElement.InlineLayout.VERTICAL
+  }, 'google_translate_element');
+
+  // Links to cross-origin destinations are unsafe
+  var gll = document.getElementsByClassName('goog-logo-link')[0];
+  if (gll) {
+    gll.setAttribute('rel', 'noopener');
+  }
+
+  function restoreLang() {
+    var iframe = document.getElementsByClassName('goog-te-banner-frame')[0];
+    if (!iframe) return;
+
+    var innerDoc = iframe.contentDocument || iframe.contentWindow.document;
+    var restore_el = innerDoc.getElementsByTagName("button");
+
+    for (var i = 0; i < restore_el.length; i++) {
+      if (restore_el[i].id.indexOf("restore") >= 0) {
+        restore_el[i].click();
+        var close_el = innerDoc.getElementsByClassName("goog-close-link");
+        close_el[0].click();
+        return;
+      }
+    }
+  }
+
+  function triggerHtmlEvent(element, eventName) {
+    var event;
+    if (document.createEvent) {
+      event = document.createEvent('HTMLEvents');
+      event.initEvent(eventName, true, true);
+      element.dispatchEvent(event);
+    } else {
+      event = document.createEventObject();
+      event.eventType = eventName;
+      element.fireEvent('on' + event.eventType, event);
+    }
+  }
+
+  var googleCombo = document.querySelector("select.goog-te-combo");
+  var langSelect = document.querySelector('.ct-language');
+  langSelect.addEventListener('click', function(event) {
+    if (!event.target) {
+      return;
+    }
+
+    var selected = document.querySelector('.ct-language .ct-language-selected');
+    if (selected) {
+      selected.classList.remove('ct-language-selected');
+    }
+
+    var target = event.target;
+    while (target && target !== langSelect ) {
+      if (target.matches('.lang-select')) {
+        break;
+      }
+      target = target.parentElement;
+    }
+
+    if (target && target.matches('.lang-select')) {
+      var lang = target.getAttribute('data-lang');
+      if (googleCombo.value == lang) {
+        restoreLang();
+      } else {
+        target.parentElement.classList.add('ct-language-selected');
+        googleCombo.value = lang;
+        triggerHtmlEvent(googleCombo, 'change');
+      }
+    }
+
+    event.preventDefault();
+  });
+}
+</script>
+
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+</span> -->
+</div>
+        </nav>
+</div>
+  </div>
+</header>
+
+<script>
+  function initHeader() {
+    var lastScrollY = getScrollPos().y;
+    var documentElement = document.documentElement;
+
+    function storeScrollData() {
+      var y = getScrollPos().y;documentElement.setAttribute("data-header-transparent", "");var scrollStatus = "";
+
+      if (y <= 0) {
+        scrollStatus = "top";
+      } else if ((window.innerHeight + y) >= document.body.offsetHeight) {
+        scrollStatus = "bottom";
+      } else {
+        var isScrollDown = (y - lastScrollY > 0) ? true : false;
+        scrollStatus = isScrollDown ? "down" : "up";
+      }
+
+      lastScrollY = y;
+      documentElement.setAttribute("data-scroll-status", scrollStatus);
+    }
+
+    window.addEventListener('scroll', function(e) {
+      storeScrollData();
+    });
+
+    storeScrollData();
+  }
+  document.addEventListener('DOMContentLoaded', initHeader);
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+  function hashLocate(hashValue) {
+    hashValue = hashValue.replace(/^.*#h-/, '');
+    hashValue = decodeURIComponent(hashValue);
+    var element = document.getElementById(hashValue);
+
+    if (!element) {
+      return;
+    }
+
+    var header = document.querySelector('header.site-header');
+    var headerRect = header.getBoundingClientRect();
+    var headerTop = Math.floor(headerRect.top);
+    var headerHeight = Math.floor(headerRect.height);
+    var scrollPos = getScrollPos();
+    var offsetY = element.offsetTop - (headerTop + headerHeight + 20);
+
+    if (offsetY == scrollPos.y) {
+      return;
+    }
+
+    if (headerTop == 0  && offsetY > scrollPos.y) {
+      offsetY += headerHeight + 2;
+    } else if (headerTop < 0  && offsetY < scrollPos.y) {
+      offsetY -= headerHeight - 2;
+    }
+
+    smoothScrollTo(offsetY);
+  }
+
+  // The first event occurred
+  window.addEventListener('load', function(event) {
+    if (window.location.hash) {
+      hashLocate(window.location.hash);
+    }
+  });
+
+  // The first event occurred
+  window.addEventListener('click', function(event) {
+    if (event.target.tagName.toLowerCase() == 'a') {
+      hashLocate(event.target.getAttribute('href'));
+    }
+  });
+</script>
+<!--<div class="theme-toggle">
+  <input type="checkbox" id="theme-switch">
+  <label for="theme-switch">
+    <div class="toggle"></div>
+    <div class="names">
+      <p class="light">Light</p>
+      <p class="dark">Dark</p>
+    </div>
+  </label>
+</div>
+
+
+
+
+<script>
+  (function() {
+    var sw = document.getElementById('theme-switch');
+    var html = document.getElementsByTagName('html')[0];
+    var nightModeOption = ('off' || 'auto').toLowerCase();
+    var storage = nightModeOption === 'manual'
+        ? localStorage
+        : sessionStorage;
+    var themeData = loadThemeData();
+
+    function saveThemeData(data) {
+      storage.setItem('theme', JSON.stringify(data));
+    }
+
+    function loadThemeData() {
+      var data = storage.getItem('theme');
+      try {
+        data = JSON.parse(data ? data : '');
+      } catch(e) {
+        data = { nightShift: undefined, autoToggleAt: 0 };
+        saveThemeData(data);
+      }
+      return data;
+    }
+
+    function handleThemeToggle(nightShift) {
+      themeData.nightShift = nightShift;
+      saveThemeData(themeData);
+      html.dataset.theme = nightShift ? 'dark' : 'light';
+      setTimeout(function() {
+        sw.checked = nightShift ? true : false;
+      }, 50);
+    }
+
+    function autoThemeToggle() {
+      // Next time point of theme toggle
+      var now = new Date();
+      var toggleAt = new Date();
+      var hours = now.getHours();
+      var nightShift = hours >= 19 || hours <=7;
+
+      if (nightShift) {
+        if (hours > 7) {
+          toggleAt.setDate(toggleAt.getDate() + 1);
+        }
+        toggleAt.setHours(7);
+      } else {
+        toggleAt.setHours(19);
+      }
+
+      toggleAt.setMinutes(0);
+      toggleAt.setSeconds(0);
+      toggleAt.setMilliseconds(0)
+
+      var delay = toggleAt.getTime() - now.getTime();
+
+      // auto toggle theme mode
+      setTimeout(function() {
+        handleThemeToggle(!nightShift);
+      }, delay);
+
+      return {
+        nightShift: nightShift,
+        toggleAt: toggleAt.getTime()
+      };
+    }
+
+    // Listen the theme toggle event
+    sw.addEventListener('change', function(event) {
+      handleThemeToggle(event.target.checked);
+    });
+
+    if (nightModeOption == 'auto') {
+      var data = autoThemeToggle();
+
+      // Toggle theme by local setting
+      if (data.toggleAt > themeData.autoToggleAt) {
+        themeData.autoToggleAt = data.toggleAt;
+        handleThemeToggle(data.nightShift);
+      } else {
+        handleThemeToggle(themeData.nightShift);
+      }
+    } else if (nightModeOption == 'manual') {
+      handleThemeToggle(themeData.nightShift);
+    } else {
+      var nightShift = themeData.nightShift;
+      if (nightShift === undefined) {
+        nightShift = nightModeOption === 'on';
+      }
+      handleThemeToggle(nightShift);
+    }
+  })();
+</script>
+--><div id="click-to-top" class="click-to-top">
+  <i class="fa fa-arrow-up"></i>
+</div>
+<script>
+  (function () {
+    const clickToTop = document.getElementById('click-to-top');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 100) {
+        clickToTop.classList.add('show')
+      }else {
+        clickToTop.classList.remove('show')
+      }
+    });
+    clickToTop.addEventListener('click', () => {
+      window.smoothScrollTo(0);
+    });
+  })();
+</script>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <div class="framework">
+  <section class="main">
+
+     <br>
+<div class="post">
+  <section>
+    
+    <!-- custom title in each post  -->
+    <p style="color:black;font-weight:bold;font-size:180%;">Simulating a queue system</p>
+    <hr>
+
+
+
+
+
+
+
+
+
+<article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+    <div class="post-content e-content" itemprop="articleBody">
+
+      <h2 id="introduction">Introduction</h2>
+
+<p>In this post I will use <a href="https://simpy.readthedocs.io/en/latest/">simpy</a> to simulate a queueing line at the airport check in counters. This is an example of Discret-event simulation (DES). In contrast to Monte-Carlo simulation, DES are useful when you need to keep track of a system’s state and analyze resource usage over time.</p>
+
+<p>There are many practial use cases where you might need DES. In particular, for a queue system, we want to balance out cost (as reflected by number of counters) vs. customer experience (as measured by wait time)</p>
+
+<p align="center">
+  <img alt="changi airport" src="/assets/images/posts/simulate-queue/airport.jpeg">
+    <em>Picture I took at Changi Airport before going on a vacation</em>
+</p>
+
+<h2 id="assumptions--methodology">Assumptions &amp; Methodology</h2>
+
+<p><img src="/assets/images/posts/simulate-queue/queue%20diagram.png" alt="queue diagram"></p>
+
+<ul>
+  <li>There are 8 counters available for check-in. When passengers arrive that the airport terminal, they will join a shared queue and go up to the next available counter.</li>
+  <li>Check-in time follows a normal distribution with a mean of 2 minutes and standard deviation of 1 minute. To spice things up, I’ve also added a 5% chance that a passenger might have issues with their paperwork and can take up to 10 minutes to resolve.</li>
+  <li>Before the counter opens, a group of 30 passengers arrived at the airport. (They just want to have more buffer time and enjoy walking around the airport)</li>
+  <li>In the first 30 minutes, passengers arrive at a slower rate. Afterwards, the arrival rate increases.</li>
+</ul>
+
+<p>The above assumptions are coded as following:</p>
+<pre><code class="language-python3">NUM_COUNTERS = 8
+
+CHECK_DURATION_AVG = 2
+CHECK_DURATION_STD = 1
+
+PASSENGER_INTERVAL_1ST = 1 # on average, 1 customer arrived every minute
+PASSENGER_INTERVAL_2ND = .33 # on average, 3 customers arrived every minute
+
+INITIAL_NUM_PASSENGERS = 30
+MAX_PASSENGERS = 250
+</code></pre>
+<p>Note: In simpy, time units can be arbitrary depending on the problem you are modeling. For the sake of clarify, I will use minutes to measure time in this model.</p>
+
+<p>The full code can be found at the end of the post. Here I’d like to highlight a few key details:</p>
+
+<h3 id="modeling-the-check-in-process">Modeling the check in process</h3>
+
+<pre><code class="language-python3">def check_in(self, passenger):
+
+    p = np.random.uniform(low=0.0, high=1.0)
+
+    # normal passengers
+    if p &lt; .95:
+        random_time = max(1, np.random.normal(self.check_duration, self.check_std))
+    
+    # 5% of passengers have problems and need more time
+    else:
+        random_time = max(10, np.random.normal(self.check_duration, self.check_std))
+
+    print(f'Start checking in passenger {passenger} at {self.env.now:1f}')
+    yield self.env.timeout(random_time)
+    print(f'Finish checking in passenger {passenger} at {self.env.now:1f}')
+</code></pre>
+
+<p>Here we’re doing 2 things:</p>
+
+<pre><code class="language-python3">p = np.random.uniform(low=0.0, high=1.0)
+if p &lt; .95:
+    ...
+</code></pre>
+
+<p>We get a random number, if the value is &lt; .95, then the passenger’s check in time follows the distribution with CHECK_DURATION_AVG and CHECK_DURATION_STD.
+For the remaining 5% of the cases, the staff will need 10 minutes to complete.</p>
+
+<pre><code class="language-python3">print(f'Start checking in passenger {passenger} at {self.env.now:1f}')
+yield self.env.timeout(random_time)
+print(f'Finish checking in passenger {passenger} at {self.env.now:1f}')
+</code></pre>
+<p>This is the actual check-in event. The 2 printing functions are optional, but helpful to collect the output to analyze the system. The env.timeout() method simulates check-in duration.</p>
+
+<h3 id="modeling-passengers-behavior">Modeling passengers behavior</h3>
+
+<pre><code class="language-python3">def passenger(env, pid, ch_in):
+    """
+    pid = unique identifier for passenger
+    """
+    print(f'Passenger {pid} arrived at the airport and join the queue at {env.now:.1f}')
+
+    # join queue and wait for the next available counter
+    with ch_in.staff.request() as request:
+        yield request
+        yield env.process(ch_in.check_in(pid))
+</code></pre>
+
+<p>This is the passenger process. Each passenger is assigned a unique id (<code class="language-plaintext highlighter-rouge">pid</code>) for ease of tracking.</p>
+
+<pre><code class="language-python3">with ch_in.staff.request() as request:
+    yield request
+    yield env.process(ch_in.check_in(pid))
+</code></pre>
+<p>This part simulates the passenger joining the queue, and will be served when they’re at the front of the queue and there’s an available counter.</p>
+
+<h3 id="setting-up-the-simulation">Setting up the simulation</h3>
+
+<pre><code class="language-python3">def setup(env, initial_passengers, passenger_interval_1st, passenger_interval_2nd, max_passengers):
+    # initialize first of group passengers who arrived before counter open
+    for i in range(initial_passengers):
+        env.process(passenger(env, i, ch_in))
+    
+
+    # simulate passengers coming in with normal interarrival time
+    while i &lt;= max_passengers:
+        # first hour
+        if env.now &lt; 30:
+            t = np.random.exponential(passenger_interval_1st)
+
+        else:
+            t = np.random.exponential(passenger_interval_2nd)
+        
+        yield env.timeout(t)
+        
+        i += 1
+        env.process(passenger(env, i, ch_in))
+</code></pre>
+
+<p>Normally, we don’t run the simulation just once and take the first result! But instead we will repeat it for ten or hundred of thousand times and perhaps changing the assumptions/parameters. Hence it’s convenient to write a setup function to initialize the simulation.</p>
+
+<p>The rest of the codes are standard python functions. You can add additional logging features to help debug or customize queue logic.</p>
+
+<h2 id="results--observations">Results &amp; Observations</h2>
+
+<h3 id="passengers-arrival">Passengers arrival</h3>
+
+<p align="center">
+  <img alt="fig1" src="/assets/images/posts/simulate-queue/fig1-212454.png">
+    <em>Fig 1 (top), Fig 2 (bottom)</em>
+</p>
+
+<p>Figures 1 and 2 shows details for individual passengers.</p>
+<ul>
+  <li>Figure 1 shows the cumulative number of passengers arriving against time
+    <ul>
+      <li>At time 0, we had 30 passengers before the counters opended. The line starts at point (0, 30).</li>
+      <li>The slope is flatter before the 30 minutes mark, and got stepper afterwards. This is because we assumed higher arrival rate.</li>
+    </ul>
+  </li>
+  <li>Figure 2 shows the time each passenger spent in the queue system: from arriving at the terminal until they finished checking in
+    <ul>
+      <li>Each passenger is one horizontal line. The blue dots indicate start time, orange dots indicate end time.</li>
+      <li>The length of the line is proportional to the time taken.</li>
+      <li>The longer lines that stand out incidate passengers with issues and held their counter up for 10 minutes ;(</li>
+    </ul>
+  </li>
+  <li>Additional details for wait time</li>
+</ul>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"> </th>
+      <th style="text-align: center">service_time</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">count</td>
+      <td style="text-align: center">250</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">mean</td>
+      <td style="text-align: center">2.55555</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">std</td>
+      <td style="text-align: center">2.00238</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">min</td>
+      <td style="text-align: center">1</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">25%</td>
+      <td style="text-align: center">1.4025</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">50%</td>
+      <td style="text-align: center">2.07835</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">75%</td>
+      <td style="text-align: center">2.91865</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">max</td>
+      <td style="text-align: center">10</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="queue-and-utilization">Queue and Utilization</h3>
+
+<p align="center">
+  <img alt="fig2" src="/assets/images/posts/simulate-queue/fig2-212454.png">
+    <em>Fig 3 (top), Fig 4 (bottom)</em>
+</p>
+
+<p>Figure 3 and 4 monitor queue length and resource utilizations.</p>
+<ul>
+  <li>In Figure 3, we can see the queue line is the longest at the beginning
+    <ul>
+      <li>This is due to the group of early passengers. Therefore, if you don’t want to wait in line, it’s probably best to avoid arriving too early!</li>
+      <li>The queue starts to build up again as passengers arrived at an increased rate after 30 mins.</li>
+    </ul>
+  </li>
+  <li>Finally we are also interested in resource utilizations. This is where the trade-off comes in.
+    <ul>
+      <li>Utilization at any time is measured as the number of busy counter / total number of counters</li>
+      <li>We can estimate overall utilization by measuring area under the curve. In this case it’s equal to roughly 81%</li>
+      <li>As a business owner, we wouldn’t want our resources to stay idle for too long. Perhaps we might try to reduce the number of counter by 1 and re-run the simulation. However, it’s important to note that for an airport, all passengers need to be checked-in before flight time. Hence maximum utilization might not be the highest priority.</li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="takeaway">Takeaway</h2>
+
+<ul>
+  <li>This is only a toy sample with somewhat simple assumptions. We can observe real data and model the different processes (arrival time, check-in time, etc) more accurately. However, even with such simple assumptions, we can see that DES is an useful tool for analyzing systems and finding bottlenecks.</li>
+  <li>For our airport queue model, we only take number of counters as cost. However, in another business scenario (such as a restaurant queue), costs might also include lost income from reneged customer (who might wait too long).</li>
+  <li>Simpy is flexible and not just limited to modelling queueing. Other use cases might be allocating production capacity at a manufacturing plant, or perhaps scheduling transportation trucks between warehouses. All these real life scenarios inherently contains a lot of random variations and would benefit from DES.</li>
+</ul>
+
+<h2 id="full-code">Full code</h2>
+
+
+    </div>
+
+</article>
+<!--<div class="post-nav"><a class="previous" href="/jekyll-theme-yat/2022/09/25/askreddit-topic-similarity.html" title="Finding the most similar questions on r/AskReddit">Finding the most similar questions on...</a><a class="next" href="/jekyll-theme-yat/2023/01/31/vn-exam.html" title="Analyzing Vietnam&#39;s high school graduation exam results">Analyzing Vietnam&#39;s high school graduation exam...</a></div>-->
+    
+    <!-- back url at the bottom of the post-->
+  
+    <a href="https://dobeok.github.io/" title="" style="font-size:140%"><i class="fa fa-home"></i> Home</a>
+    <!--<div class="post-related">
+      <div>Related Articles</div>
+      <ul>
+        <li><a class="post-link" href="/jekyll-theme-yat/2020/08/20/web-scraping.html" title="Analyzing Vietnam&#39;s high school graduation exam results">Web scraping with requests and BeautifulSoup</a></li><li><a class="post-link" href="/jekyll-theme-yat/2022/08/20/pokernow.html" title="Analyzing Vietnam&#39;s high school graduation exam results">Analyzing my poker games</a></li><li><a class="post-link" href="/jekyll-theme-yat/2023/01/31/vn-exam.html" title="Analyzing Vietnam&#39;s high school graduation exam results">Analyzing Vietnam&#39;s high school graduation exam results</a></li><li><a class="post-link" href="/jekyll-theme-yat/2020/09/12/choropleth-map.html" title="Analyzing Vietnam&#39;s high school graduation exam results">Creating choropleth map with geopandas and matplotlib</a></li></ul>
+    </div>--><!--<div class="post-comments"></div>-->
+
+  </section>
+</div>
+
+
+  </section>
+  <section class="sidebar" style="margin-left: 15px;">
+    <!-- Get sidebar items --><style type="text/css" media="screen">
+.post-menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+</style>
+
+<div class="post-menu">
+  <div class="post-menu-title">Contents</div>
+  <div class="post-menu-content"></div>
+</div>
+
+<script>
+  function generateContent() {
+    var menu = document.querySelector(".post-menu");
+    var menuContent =  menu.querySelector(".post-menu-content");
+    var headings = document.querySelector(".post-content").querySelectorAll("h2, h3, h4, h5, h6");
+
+    // Hide menu when no headings
+    if (headings.length === 0) {
+      return menu.style.display = "none";
+    }
+
+    // Generate post menu
+    var menuHTML = '';
+    for (var i = 0; i < headings.length; i++) {
+      var h = headings[i];
+      menuHTML += (
+        '<li class="h-' + h.tagName.toLowerCase() + '">'
+        + '<a href="#h-' + h.getAttribute('id') + '">' + h.textContent + '</a></li>');
+    }
+
+    menuContent.innerHTML = '<ul>' + menuHTML + '</ul>';
+
+    // The header element
+    var header = document.querySelector('header.site-header');
+
+    function doMenuCollapse(index, over_items) {
+      var items = menuContent.firstChild.children;
+
+      if (over_items == undefined) {
+        over_items = 20;
+      }
+
+      if (items.length < over_items) {
+        return;
+      }
+
+      var activeItem = items[index];
+      var beginItem = activeItem
+      var endItem = activeItem
+      var beginIndex = index;
+      var endIndex = index + 1;
+      while (beginIndex >= 0
+        && !items[beginIndex].classList.contains('h-h2')) {
+        beginIndex -= 1;
+      }
+      while (endIndex < items.length
+        && !items[endIndex].classList.contains('h-h2')) {
+        endIndex += 1;
+      }
+      for (var i = 0; i < beginIndex; i++) {
+        item = items[i]
+        if (!item.classList.contains('h-h2')) {
+          item.style.display = 'none';
+        }
+      }
+      for (var i = beginIndex + 1; i < endIndex; i++) {
+        item = items[i]
+        // if (!item.classList.contains('h-h2')) {
+          item.style.display = '';
+        // }
+      }
+      for (var i = endIndex; i < items.length; i++) {
+        item = items[i]
+        if (!item.classList.contains('h-h2')) {
+          item.style.display = 'none';
+        }
+      }
+    }
+
+    // Init menu collapsed
+    doMenuCollapse(-1);
+
+    // Active the menu item
+    window.addEventListener('scroll', function (event) {
+      var lastActive = menuContent.querySelector('.active');
+      var changed = true;
+      var activeIndex = -1;
+      for (var i = headings.length - 1; i >= 0; i--) {
+        var h = headings[i];
+        var headingRect = h.getBoundingClientRect();
+        var headerRect = header.getBoundingClientRect();
+        var headerTop = Math.floor(headerRect.top);
+        var headerHeight = Math.floor(headerRect.height);
+        var headerHeight = headerTop + headerHeight + 20;
+        if (headingRect.top <= headerHeight) {
+          var id = 'h-' + h.getAttribute('id');
+          var a = menuContent.querySelector('a[href="#' + id  + '"]');
+          var curActive = a.parentNode;
+          if (curActive) {
+            curActive.classList.add('active');
+            activeIndex = i;
+          }
+          if (lastActive == curActive) {
+            changed = false;
+          }
+          break;
+        }
+      }
+      if (changed) {
+        if (lastActive) {
+          lastActive.classList.remove('active');
+        }
+        doMenuCollapse(activeIndex);
+      }
+      event.preventDefault();
+    });
+  }
+  generateContent();
+</script>
+</section>
+</div>
+
+
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/jekyll-theme-yat/"></data>
+
+  <div class="wrapper">
+    <div class="site-footer-inner">
+<div>
+<span class="copyleft">©</span> 2020-2023 Vo Duy Do</div>
+      <div>
+<a href="https://github.com/dobeok" target="_blank">My Github </a> | <a href="/about">About Me</a>
+</div>
+      <!-- <div>Powered by <a title="Jekyll is a simple, blog-aware, static site
+      generator." href="https://jekyllrb.com/">Jekyll</a> &amp; <a title="Yat, yet
+      another theme." href="https://github.com/jeffreytse/jekyll-theme-yat">Yat Theme</a>.</div>
+      <div class="footer-col rss-subscribe">Subscribe <a href="/jekyll-theme-yat/feed.xml">via RSS</a></div> -->
+    </div>
+  </div>
+</footer>
+</body>
+</html>
