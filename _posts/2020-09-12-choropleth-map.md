@@ -4,6 +4,7 @@ title:  Creating choropleth map with geopandas and matplotlib
 date:   2020-09-12 20:30:00 +0700
 tags: visualization
 featured_img: /assets/images/posts/color-map/gpd-fig-2.png
+description: Creating a choropleth map to present geographical data
 ---
 
 ### Introduction

@@ -3,6 +3,7 @@ layout: post
 title:  Web scraping with requests and BeautifulSoup
 date:   2020-08-20 12:11:27 +0700
 tags: web-scraping
+description: Basic web scraping with Requests and BeautifulSoup
 ---
 
 ### Introduction

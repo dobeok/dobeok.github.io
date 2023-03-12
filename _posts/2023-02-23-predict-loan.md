@@ -4,7 +4,7 @@ title: Predicting loan defaults
 date:   2023-02-23 12:00:00 +0700
 tags: sklearn classification
 featured_img: /assets/images/posts/predict-loan-default/notebook_20_0.png
-
+description:  Fitting a statistical model to historical credit data and estimate the value of current loans. Along with model building, I will demonstrate the use of sklearn's Pipeline as a more convenient approach for Feature Enginerring, Cross Validation and Hyperparameters Tuning
 ---
 ## Introduction
 

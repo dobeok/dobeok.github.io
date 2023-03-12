@@ -4,6 +4,7 @@ title:  Creating a pokemon guesser
 date:   2022-06-01 11:00:00 +0700
 tags: image-processing opencv numpy
 featured_img: /assets/images/posts/pokemon-guesser/pokemon-banner.jpg
+description: Using openCV to extract image contours and process image akin to guess the pokemon games
 ---
 
 ### Introduction

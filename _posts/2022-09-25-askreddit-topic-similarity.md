@@ -4,6 +4,7 @@ title:  Finding the most similar questions on r/AskReddit
 date:   2022-09-25 12:00:00 +0700
 tags: tf-idf sklearn
 featured_img: /assets/images/posts/askreddit-similar/askreddit.jpg
+description: r/AskReddit is a popular subreddit where users can submit open-ended questions. In this analysis, I analyze the top 1,000 questions and find those that are most similar. The resulting technique can be applied to recommending similar questions to increase engagement, or identifying reposted questions
 ---
 
 

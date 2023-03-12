@@ -4,7 +4,7 @@ title: Guessing user drawn digit
 date:   2023-02-15 12:00:00 +0700
 tags: keras streamlit
 featured_img: /assets/images/posts/guess-digit/demo.gif
-
+description: Using CNN to build a digit guessing game. The model is trained using Keras and GUI is created using Streamlit
 ---
 In this post I made a fun game of drawing a number, and challenging the model to guess it correctly. The model itself is a Convolutional Neural Network (CNN) model, built using the MNIST digits datasets.
 
